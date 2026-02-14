@@ -1,0 +1,20 @@
+
+dsc.inf.pucp.edu.pe {
+  handle_path /community-events/* {
+    reverse_proxy app:3000
+  }
+
+  handle_path /community-events/uploads/* {
+    root * /app/uploads
+    file_server
+  }
+
+  encode gzip
+
+  header {
+    Strict-Transport-Security "max-age=31536000;"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "SAMEORIGIN"
+    Referrer-Policy "strict-origin-when-cross-origin"
+  }
+}
