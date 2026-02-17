@@ -1,22 +1,51 @@
-import { betterAuth } from 'better-auth';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { db } from './db';
-import { env } from './env';
-import * as schema from './db/schema';
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { db } from "./db";
+import * as schema from "./db/schema";
 
 export const auth = betterAuth({
+    baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    basePath: "/api/auth",
     database: drizzleAdapter(db, {
-        provider: 'sqlite',
+        provider: "sqlite",
         schema: {
-            user: schema.user,
-            session: schema.session,
-            account: schema.account,
-            verification: schema.verification,
+            users: schema.organizations,
+            sessions: schema.sessions,
+            accounts: schema.accounts,
+            verifications: schema.verifications,
         },
+        usePlural: true,
     }),
     emailAndPassword: {
         enabled: true,
+        requireEmailVerification: false,
     },
-    secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.BETTER_AUTH_URL,
+    user: {
+        additionalFields: {
+            role: {
+                type: "string",
+                required: true,
+                defaultValue: "organization",
+            },
+            name: {
+                type: "string",
+                required: false,
+            },
+            description: {
+                type: "string",
+                required: false,
+            },
+            contacts: {
+                type: "string",
+                required: false,
+            },
+            isFirstLogin: {
+                type: "boolean",
+                required: true,
+                defaultValue: true,
+            },
+        },
+    },
 });
+
+export type Session = typeof auth.$Infer.Session;

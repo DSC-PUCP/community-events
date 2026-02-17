@@ -5,3 +5,5 @@ import * as schema from './schema';
 
 const sqlite = new Database(env.DATABASE_URL);
 export const db = drizzle(sqlite, { schema });
+
+export * from './schema';

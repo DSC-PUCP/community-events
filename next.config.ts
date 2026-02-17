@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
             },
         ]
     },
+    env: {
+        NEXT_PUBLIC_BASE_PATH: '/community-events',
+    },
 };
 
 export default nextConfig;
