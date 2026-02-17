@@ -3,7 +3,10 @@ import * as schema from './schema';
 import { drizzle as drizzleBetterSqlite } from 'drizzle-orm/better-sqlite3';
 import { drizzle as drizzleLibsql } from 'drizzle-orm/libsql';
 
-let db;
+type BetterSqliteDb = ReturnType<typeof drizzleBetterSqlite<typeof schema>>;
+type LibSqlDb = ReturnType<typeof drizzleLibsql<typeof schema>>;
+
+let db: BetterSqliteDb | LibSqlDb;
 
 if (process.env.VERCEL) {
     const { createClient } = await import('@libsql/client');
