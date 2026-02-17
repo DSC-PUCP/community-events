@@ -1,9 +1,27 @@
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { env } from '../env';
 import * as schema from './schema';
+import { drizzle as drizzleBetterSqlite } from 'drizzle-orm/better-sqlite3';
+import { drizzle as drizzleLibsql } from 'drizzle-orm/libsql';
 
-const sqlite = new Database(env.DATABASE_URL);
-export const db = drizzle(sqlite, { schema });
+type BetterSqliteDb = ReturnType<typeof drizzleBetterSqlite<typeof schema>>;
+type LibSqlDb = ReturnType<typeof drizzleLibsql<typeof schema>>;
 
+let db: BetterSqliteDb | LibSqlDb;
+
+if (process.env.VERCEL) {
+    const { createClient } = await import('@libsql/client');
+
+    const client = createClient({
+        url: env.DATABASE_URL,
+        authToken: env.DATABASE_AUTH_TOKEN,
+    });
+
+    db = drizzleLibsql(client, { schema });
+} else {
+    const Database = (await import('better-sqlite3')).default;
+    const sqlite = new Database(env.DATABASE_URL);
+    db = drizzleBetterSqlite(sqlite, { schema });
+}
+
+export { db };
 export * from './schema';
