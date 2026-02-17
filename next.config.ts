@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
+const isVercel = !!process.env.VERCEL;
+
 const nextConfig: NextConfig = {
-    output: 'standalone',
+    ...(!isVercel && { output: 'standalone' }),
     basePath: '/community-events',
     assetPrefix: '/community-events',
     async redirects() {
