@@ -24,6 +24,24 @@ export const auth = betterAuth({
         enabled: true,
         requireEmailVerification: false,
     },
+    databaseHooks: {
+        user: {
+            create: {
+                before: async (user) => {
+                    const adminEmail = process.env.ADMIN_EMAIL;
+                    if (adminEmail && user.email === adminEmail) {
+                        return {
+                            data: {
+                                ...user,
+                                role: 'admin',
+                                isFirstLogin: false,
+                            },
+                        };
+                    }
+                },
+            },
+        },
+    },
     user: {
         additionalFields: {
             role: {

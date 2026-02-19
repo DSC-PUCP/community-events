@@ -7,6 +7,8 @@ import { getAllEvents } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
 import type { Event, Category } from '@/lib/types';
 
+const PAGE_SIZE = 8;
+
 export default function HomePage() {
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
@@ -15,6 +17,7 @@ export default function HomePage() {
   const [selectedCats, setSelectedCats] = useState<number[]>([]);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     async function loadData() {
@@ -33,6 +36,9 @@ export default function HomePage() {
     }
     loadData();
   }, []);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setCurrentPage(1); }, [search, selectedCats, dateRange]);
 
   const filteredEvents = useMemo(() => {
     return events.filter((ev) => {
@@ -53,6 +59,9 @@ export default function HomePage() {
   const toggleCategory = (id: number) => {
     setSelectedCats((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
+
+  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE));
+  const paginatedEvents = filteredEvents.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   if (loading) {
     return (
@@ -130,16 +139,56 @@ export default function HomePage() {
         </div>
 
         {filteredEvents.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredEvents.map((event) => (
-                  <EventCard
-                      key={event.id}
-                      event={event}
-                      categories={categories}
-                      onClick={(ev) => router.push(`/events/${ev.id}`)}
-                  />
-              ))}
-            </div>
+            <>
+              <p className="text-sm text-slate-500 mb-4">
+                {filteredEvents.length} evento{filteredEvents.length !== 1 ? 's' : ''} encontrado{filteredEvents.length !== 1 ? 's' : ''}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {paginatedEvents.map((event) => (
+                    <EventCard
+                        key={event.id}
+                        event={event}
+                        categories={categories}
+                        onClick={(ev) => router.push(`/events/${ev.id}`)}
+                    />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-10">
+                  <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    ← Anterior
+                  </button>
+                  <div className="flex gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-9 h-9 rounded-xl text-sm font-bold transition-colors ${
+                                page === currentPage
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
+                            }`}
+                        >
+                          {page}
+                        </button>
+                    ))}
+                  </div>
+                  <button
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
+            </>
         ) : (
             <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
               <div className="text-slate-400 mb-4 text-5xl">🔭</div>

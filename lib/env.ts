@@ -9,6 +9,7 @@ const envSchema = z.object({
     BETTER_AUTH_URL: z.url(),
     NEXT_PUBLIC_APP_URL: z.url(),
     UPLOAD_DIR: z.string().default('./public/uploads'),
+    ADMIN_EMAIL: z.string().email().optional(),
 });
 
 export const env = envSchema.parse(process.env);
