@@ -4,13 +4,10 @@ import { db } from "./db";
 import * as schema from "./db/schema";
 
 const betterAuthUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
-const authBasePath = betterAuthUrl.includes("/community-events")
-    ? "/community-events/api/auth"
-    : "/api/auth";
 
 export const auth = betterAuth({
     baseURL: betterAuthUrl,
-    basePath: authBasePath,
+    basePath: "/api/auth",
     trustedOrigins: [
         betterAuthUrl,
         process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
