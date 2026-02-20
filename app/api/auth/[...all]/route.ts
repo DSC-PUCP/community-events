@@ -12,11 +12,15 @@ function rewriteRequestUrl(request: Request): Request {
     if (!url.pathname.startsWith('/api/auth')) return request;
     const newPath = BASE_PATH + url.pathname;
     const newUrl = url.origin + newPath + url.search;
-    return new Request(newUrl, {
+    const init: RequestInit & { duplex?: 'half' } = {
         method: request.method,
         headers: request.headers,
-        body: request.method !== 'GET' && request.body ? request.body : undefined,
-    });
+    };
+    if (request.method !== 'GET' && request.body) {
+        init.body = request.body;
+        init.duplex = 'half';
+    }
+    return new Request(newUrl, init);
 }
 
 async function withLog(method: 'GET' | 'POST', request: Request) {
