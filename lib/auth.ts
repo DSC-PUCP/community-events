@@ -4,11 +4,17 @@ import { db } from "./db";
 import * as schema from "./db/schema";
 
 const betterAuthUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+const useBasePath = betterAuthUrl.includes("/community-events");
+const baseURL =
+    process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}${useBasePath ? "/community-events" : ""}`
+        : betterAuthUrl;
 
 export const auth = betterAuth({
-    baseURL: betterAuthUrl,
+    baseURL,
     basePath: "/api/auth",
     trustedOrigins: [
+        baseURL,
         betterAuthUrl,
         process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     ],
