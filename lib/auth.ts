@@ -3,11 +3,19 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db";
 import * as schema from "./db/schema";
 
+const betterAuthUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+const betterAuthOrigin = betterAuthUrl.includes("/community-events")
+    ? betterAuthUrl.replace(/\/community-events\/?$/, "")
+    : betterAuthUrl;
+const authBasePath = betterAuthUrl.includes("/community-events")
+    ? "/community-events/api/auth"
+    : "/api/auth";
+
 export const auth = betterAuth({
-    baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    basePath: "/api/auth",
+    baseURL: betterAuthOrigin,
+    basePath: authBasePath,
     trustedOrigins: [
-        process.env.BETTER_AUTH_URL || "http://localhost:3000",
+        betterAuthUrl,
         process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     ],
     database: drizzleAdapter(db, {

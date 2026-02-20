@@ -17,7 +17,12 @@ export default function Page() {
         e.preventDefault();
         setError('');
         setLoading(true);
-
+        // #region agent log
+        const baseURL = typeof window !== 'undefined' ? `${window.location.origin}${(process as unknown as { env?: { NEXT_PUBLIC_BASE_PATH?: string } }).env?.NEXT_PUBLIC_BASE_PATH ?? '/community-events'}/api/auth` : '';
+        if (typeof fetch === 'function') {
+            fetch('http://127.0.0.1:7922/ingest/adcbd464-cb24-46e4-82b2-84e4b150a2cd', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'd32291' }, body: JSON.stringify({ sessionId: 'd32291', location: 'app/(auth)/login/page.tsx:handleSubmit', message: 'signIn.email called', data: { baseURL, expectedAuthUrl: baseURL ? `${baseURL}/sign-in/email` : null }, timestamp: Date.now(), hypothesisId: 'B' }) }).catch(() => {});
+        }
+        // #endregion
         try {
             const result = await signIn.email({
                 email,
