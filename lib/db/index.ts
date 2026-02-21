@@ -9,18 +9,18 @@ type LibSqlDb = ReturnType<typeof drizzleLibsql<typeof schema>>;
 let db: BetterSqliteDb | LibSqlDb;
 
 if (process.env.VERCEL) {
-    const { createClient } = await import('@libsql/client');
+  const { createClient } = await import('@libsql/client');
 
-    const client = createClient({
-        url: env.DATABASE_URL,
-        authToken: env.DATABASE_AUTH_TOKEN,
-    });
+  const client = createClient({
+    url: env.DATABASE_URL,
+    authToken: env.DATABASE_AUTH_TOKEN,
+  });
 
-    db = drizzleLibsql(client, { schema });
+  db = drizzleLibsql(client, { schema });
 } else {
-    const Database = (await import('better-sqlite3')).default;
-    const sqlite = new Database(env.DATABASE_URL);
-    db = drizzleBetterSqlite(sqlite, { schema });
+  const Database = (await import('better-sqlite3')).default;
+  const sqlite = new Database(env.DATABASE_URL);
+  db = drizzleBetterSqlite(sqlite, { schema });
 }
 
 export { db };

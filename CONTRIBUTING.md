@@ -3,21 +3,23 @@
 ## Setup
 
 1. Clona el repositorio:
-    ```bash
-    git clone https://github.com/DSC-PUCP/community-events
+
+   ```bash
+   git clone https://github.com/DSC-PUCP/community-events
    ```
 
 2. Copia el `.env.example` a `.env`.
 
-2. Instala las dependencias y crea la BD local:
-    ```
+3. Instala las dependencias y crea la BD local:
+
+   ```
    npm i
    npm run db:migrate
    npm run db:seed
    ```
 
-3. Inicia el servidor dev:
-    ```
+4. Inicia el servidor dev:
+   ```
    npm run dev
    ```
 
