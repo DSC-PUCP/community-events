@@ -6,13 +6,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node --env-file=.env .next/standalone/server.js",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx seed.ts",
-    "generate:secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+    "generate:secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+    "postbuild": "node scripts/postbuild.js"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
