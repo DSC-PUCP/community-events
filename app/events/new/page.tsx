@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { createEvent, uploadBanner } from '@/lib/actions/events';
@@ -10,7 +10,7 @@ import type { Category } from '@/lib/types';
 export default function NewEventPage() {
   const router = useRouter();
   const { data: session } = useSession();
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -174,11 +174,40 @@ export default function NewEventPage() {
             Imagen de portada *
           </label>
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             onChange={handleFileChange}
             className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
           />
+          <div className="flex items-center gap-3">
+            {bannerFile && (
+              <button
+                type="button"
+                onClick={() => {
+                  setBannerFile(null);
+                  setPreviewUrl(bannerUrl);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
+                title="Quitar archivo"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
           <p className="text-xs text-slate-400 mt-1">O proporciona una URL:</p>
           <input
             type="url"
