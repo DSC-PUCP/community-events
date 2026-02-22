@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Event, Category } from '@/lib/types';
+import type { Category, Event } from '@/lib/types';
 
 interface EventCardProps {
   event: Event;
@@ -15,7 +15,7 @@ const EventCard: React.FC<EventCardProps> = ({
   const eventCategories = categories.filter((c) =>
     event.categories.includes(c.id),
   );
-  const dateStr = new Date(event.startDate).toLocaleDateString('en-US', {
+  const dateStr = new Date(event.startDate).toLocaleDateString('es-PE', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
