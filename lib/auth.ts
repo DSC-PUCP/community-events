@@ -4,14 +4,15 @@ import { db } from './db';
 import * as schema from './db/schema';
 
 const trustedOrigins = ['http://localhost:3000'];
+if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+  trustedOrigins.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
+}
 if (process.env.VERCEL_URL) {
   trustedOrigins.push(`https://${process.env.VERCEL_URL}`);
 }
 if (process.env.VERCEL_BRANCH_URL) {
   trustedOrigins.push(`https://${process.env.VERCEL_BRANCH_URL}`);
 }
-
-console.log(trustedOrigins);
 
 export const auth = betterAuth({
   baseURL: process.env.VERCEL_URL
