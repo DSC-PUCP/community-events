@@ -5,10 +5,13 @@ import * as schema from './db/schema';
 
 export const auth = betterAuth({
   baseURL: process.env.VERCEL_URL
-    ? new URL(process.env.VERCEL_URL).origin
+    ? `https://${process.env.VERCEL_URL}`
     : 'http://localhost:3000',
   basePath: '/api/auth',
-  trustedOrigins: ['http://localhost:3000', process.env.VERCEL_URL!],
+  trustedOrigins: [
+    'http://localhost:3000',
+    `https://${process.env.VERCEL_URL}`,
+  ],
   database: drizzleAdapter(db, {
     provider: 'sqlite',
     schema: {
