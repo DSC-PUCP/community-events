@@ -5,7 +5,7 @@ import type { auth } from '@/lib/auth';
 const baseURL =
   typeof window !== 'undefined'
     ? `${window.location.origin}/community-events/api/auth`
-    : `${process.env.NEXT_PUBLIC_APP_URL}/community-events/api/auth`;
+    : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/community-events/api/auth`;
 
 export const { signIn, signUp, signOut, useSession, getSession } =
   createAuthClient({

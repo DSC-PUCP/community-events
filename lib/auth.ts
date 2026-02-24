@@ -3,13 +3,20 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './db';
 import * as schema from './db/schema';
 
+const trustedOrigins = ['http://localhost:3000'];
+if (process.env.VERCEL_URL) {
+  trustedOrigins.push(`https://${process.env.VERCEL_URL}`);
+}
+if (process.env.VERCEL_BRANCH_URL) {
+  trustedOrigins.push(`https://${process.env.VERCEL_BRANCH_URL}`);
+}
+
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+  baseURL: process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000',
   basePath: '/api/auth',
-  trustedOrigins: [
-    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  ],
+  trustedOrigins,
   database: drizzleAdapter(db, {
     provider: 'sqlite',
     schema: {
