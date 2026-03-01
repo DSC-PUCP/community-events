@@ -54,6 +54,22 @@ export default function EventDetailPage({
     void loadData();
   }, [id]);
 
+  useEffect(() => {
+    if (!isOrgModalOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOrgModalOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOrgModalOpen]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -203,8 +219,19 @@ export default function EventDetailPage({
                     </span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
-                      {org.name?.charAt(0) || '?'}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center">
+                      {org.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={org.image}
+                          alt={org.name || 'Organización'}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-indigo-600 font-bold">
+                          {org.name?.charAt(0) || '?'}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <div className="font-bold text-slate-900">
@@ -390,32 +417,43 @@ export default function EventDetailPage({
                 </svg>
               </button>
               <div className="absolute -bottom-10 left-8">
-                <div className="w-24 h-24 bg-white rounded-2xl shadow-lg border-4 border-white flex items-center justify-center text-indigo-600 text-3xl font-bold">
-                  {org.name?.charAt(0) || '?'}
+                <div className="w-24 h-24 rounded-2xl shadow-lg border-4 border-white overflow-hidden bg-white flex items-center justify-center">
+                  {org.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={org.image}
+                      alt={org.name || 'Organización'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-indigo-600 text-3xl font-bold">
+                      {org.name?.charAt(0) || '?'}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
             <div className="pt-14 p-8">
               <h2 className="text-2xl font-bold text-slate-900 mb-1">
-                {org.name || 'Student Organization'}
+                {org.name || 'Organización estudiantil'}
               </h2>
               <p className="text-slate-500 mb-6">{org.email}</p>
 
               <div className="space-y-6">
                 <div>
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                    About the Host
+                    Sobre la organización
                   </h4>
                   <p className="text-slate-600 leading-relaxed italic">
                     {org.description
-                      || 'No description provided by the organization yet.'}
+                      || 'La organización aún no ha proporcionado una descripción.'}
                   </p>
                 </div>
 
                 {org.contacts && org.contacts.length > 0 && (
                   <div>
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-                      Contact Information
+                      Información de contacto
                     </h4>
                     <div className="flex flex-wrap gap-3">
                       {org.contacts.map((contact, idx: number) => (
@@ -488,7 +526,7 @@ export default function EventDetailPage({
                 onClick={() => setIsOrgModalOpen(false)}
                 className="bg-slate-900 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-800 transition-colors"
               >
-                Close Profile
+                Cerrar perfil
               </button>
             </div>
           </div>
