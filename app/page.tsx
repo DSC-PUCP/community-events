@@ -1,17 +1,38 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import EventCard from '@/components/EventCard';
 import { getAllEvents } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
 import type { Event, Category } from '@/lib/types';
 import { getOrganizationsForFilter } from '@/lib/actions/organizations';
+// Necessary for pagination and filter state management
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import {
+  getToday,
+  getThisWeek,
+  getThisMonth,
+  getNext7Days,
+  getNext30Days,
+  areDateRangesEqual,
+} from '@/lib/utils/date-helpers';
 
 const PAGE_SIZE = 8;
 
+// It defines sorting options for events.
+type SortOption =
+  | 'date-desc' // First upcoming events
+  | 'date-asc' // First past events
+  | 'created-desc' // Most recently added
+  | 'created-asc' // Least recently added
+  | 'title-asc' // A → Z
+  | 'title-desc'; // Z → A
+
 export default function HomePage() {
+  const searchParams = useSearchParams(); // So we can read query params for filters and pagination
+  const pathname = usePathname(); // We obtain the current path to manage URL updates without losing the base path
   const router = useRouter();
+
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [organizations, setOrganizations] = useState<
@@ -23,6 +44,9 @@ export default function HomePage() {
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // New, for sorting
+  const [sortBy, setSortBy] = useState<SortOption>('date-desc');
 
   useEffect(() => {
     async function loadData() {
@@ -36,6 +60,25 @@ export default function HomePage() {
         setEvents(eventsData);
         setCategories(categoriesData);
         setOrganizations(organizationsData);
+
+        // Load filters from URL query params
+        const urlSearch = searchParams.get('q') || '';
+        const urlCats =
+          searchParams.get('cats')?.split(',').map(Number).filter(Boolean)
+          || [];
+        const urlDateStart = searchParams.get('dateStart') || '';
+        const urlDateEnd = searchParams.get('dateEnd') || '';
+        const urlOrg = searchParams.get('org') || null;
+        const urlPage = parseInt(searchParams.get('page') || '1', 10);
+        const urlSort = (searchParams.get('sort') || 'date-desc') as SortOption;
+
+        // Now we set the state based on URL params, which will trigger the filters to apply
+        setSearch(urlSearch);
+        setSelectedCats(urlCats);
+        setDateRange({ start: urlDateStart, end: urlDateEnd });
+        setSelectedOrg(urlOrg);
+        setCurrentPage(urlPage);
+        setSortBy(urlSort);
       } catch (error) {
         console.error('Failed to load data:', error);
       } finally {
@@ -45,11 +88,43 @@ export default function HomePage() {
     void loadData();
   }, []);
 
+  // Use effect to update URL query params whenever filters, pagination, or sorting change
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    // We only add params that have values to keep the URL clean
+    if (search) params.set('q', search);
+    if (selectedCats.length > 0) params.set('cats', selectedCats.join(','));
+    if (dateRange.start) params.set('dateStart', dateRange.start);
+    if (dateRange.end) params.set('dateEnd', dateRange.end);
+    if (selectedOrg) params.set('org', selectedOrg);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+    if (sortBy !== 'date-desc') params.set('sort', sortBy);
+
+    // New url
+    const newUrl = params.toString()
+      ? `${pathname}?${params.toString()}`
+      : pathname;
+
+    // Now we replace the URL without reloading the page
+    router.replace(newUrl);
+  }, [
+    search,
+    selectedCats,
+    dateRange,
+    selectedOrg,
+    currentPage,
+    sortBy,
+    pathname,
+    router,
+  ]);
+
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [search, selectedCats, dateRange, selectedOrg]);
 
+  // Helpers
   const filteredEvents = useMemo(() => {
     return events.filter((ev) => {
       const matchesSearch =
@@ -76,14 +151,47 @@ export default function HomePage() {
     });
   }, [events, search, selectedCats, dateRange, selectedOrg]);
 
+  const sortedEvents = useMemo(() => {
+    const sorted = [...filteredEvents]; // Create a copy to sort
+
+    switch (sortBy) {
+      case 'date-asc':
+        return sorted.sort(
+          (a, b) =>
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+        );
+      case 'date-desc':
+        return sorted.sort(
+          (a, b) =>
+            new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+        );
+      case 'created-asc':
+        return sorted.sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        );
+      case 'created-desc':
+        return sorted.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+      case 'title-asc':
+        return sorted.sort((a, b) => a.title.localeCompare(b.title));
+      case 'title-desc':
+        return sorted.sort((a, b) => b.title.localeCompare(a.title));
+      default:
+        return sorted;
+    }
+  }, [filteredEvents, sortBy]);
+
   const toggleCategory = (id: number) => {
     setSelectedCats((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE));
-  const paginatedEvents = filteredEvents.slice(
+  const totalPages = Math.max(1, Math.ceil(sortedEvents.length / PAGE_SIZE));
+  const paginatedEvents = sortedEvents.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
@@ -109,58 +217,122 @@ export default function HomePage() {
         </p>
       </div>
 
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row gap-4">
-        {/* Buscador */}
-        <div className="flex-1 relative">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      {/* CONTENEDOR PRINCIPAL DE FILTROS */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 space-y-4">
+        {/* FILA 1: Buscador */}
+        <div className="w-full">
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Busca eventos, temas u organizaciones..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
-          </svg>
-          <input
-            type="text"
-            placeholder="Busca eventos, temas u organizaciones..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          </div>
         </div>
 
-        {/* Filtro por fechas */}
-        <div className="flex gap-4 items-center">
-          <input
-            type="date"
-            className="px-3 py-3 rounded-xl border border-slate-200 text-sm"
-            value={dateRange.start}
-            onChange={(e) =>
-              setDateRange((prev) => ({ ...prev, start: e.target.value }))
-            }
-          />
-          <span className="text-slate-400">hasta</span>
-          <input
-            type="date"
-            className="px-3 py-3 rounded-xl border border-slate-200 text-sm"
-            value={dateRange.end}
-            onChange={(e) =>
-              setDateRange((prev) => ({ ...prev, end: e.target.value }))
-            }
-          />
+        {/* FILA 2: Presets de fecha */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-sm font-medium text-slate-600 self-center mr-2">
+            Fecha:
+          </span>
+          <button
+            onClick={() => setDateRange(getToday())}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              areDateRangesEqual(dateRange, getToday())
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            Hoy
+          </button>
+          <button
+            onClick={() => setDateRange(getThisWeek())}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              areDateRangesEqual(dateRange, getThisWeek())
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            Esta semana
+          </button>
+          <button
+            onClick={() => setDateRange(getThisMonth())}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              areDateRangesEqual(dateRange, getThisMonth())
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            Este mes
+          </button>
+          <button
+            onClick={() => setDateRange(getNext7Days())}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              areDateRangesEqual(dateRange, getNext7Days())
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            Próximos 7d
+          </button>
+          <button
+            onClick={() => setDateRange(getNext30Days())}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              areDateRangesEqual(dateRange, getNext30Days())
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            Próximos 30d
+          </button>
         </div>
 
-        {/* Filtro por organización */}
-        <div>
+        {/* FILA 3: Controles específicos */}
+        <div className="flex flex-wrap gap-3 items-center">
+          {/* Fechas manuales */}
+          <div className="flex gap-2 items-center">
+            <input
+              type="date"
+              className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              value={dateRange.start}
+              onChange={(e) =>
+                setDateRange((prev) => ({ ...prev, start: e.target.value }))
+              }
+            />
+            <span className="text-slate-400 text-xs">→</span>
+            <input
+              type="date"
+              className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              value={dateRange.end}
+              onChange={(e) =>
+                setDateRange((prev) => ({ ...prev, end: e.target.value }))
+              }
+            />
+          </div>
+
+          {/* Separador vertical */}
+          <div className="hidden md:block h-8 w-px bg-slate-200"></div>
+
+          {/* Organización */}
           <select
             value={selectedOrg ?? ''}
             onChange={(e) => setSelectedOrg(e.target.value || null)}
-            className="px-3 py-3 rounded-xl border border-slate-200 text-sm w-full md:w-auto"
+            className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
           >
             <option value="">Todas las organizaciones</option>
             {organizations.map((org) => (
@@ -169,6 +341,52 @@ export default function HomePage() {
               </option>
             ))}
           </select>
+
+          {/* Ordenamiento */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+          >
+            <option value="date-desc">Más recientes</option>
+            <option value="date-asc">Más antiguos</option>
+            <option value="created-desc">Recién añadidos</option>
+            <option value="created-asc">Añadidos antes</option>
+            <option value="title-asc">A → Z</option>
+            <option value="title-desc">Z → A</option>
+          </select>
+
+          {/* Spacer para empujar el botón a la derecha en desktop */}
+          <div className="flex-1 hidden lg:block"></div>
+
+          {/* Botón limpiar */}
+          <button
+            onClick={() => {
+              setSearch('');
+              setSelectedCats([]);
+              setDateRange({ start: '', end: '' });
+              setSelectedOrg(null);
+              setCurrentPage(1);
+              setSortBy('date-desc');
+              router.replace(pathname);
+            }}
+            className="px-4 py-2 rounded-xl border-2 border-slate-300 text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-2"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+            Limpiar filtros
+          </button>
         </div>
       </div>
 
@@ -188,12 +406,12 @@ export default function HomePage() {
         ))}
       </div>
 
-      {filteredEvents.length > 0 ? (
+      {sortedEvents.length > 0 ? (
         <>
           <p className="text-sm text-slate-500 mb-4">
-            {filteredEvents.length} evento
-            {filteredEvents.length !== 1 ? 's' : ''} encontrado
-            {filteredEvents.length !== 1 ? 's' : ''}
+            {sortedEvents.length} evento
+            {sortedEvents.length !== 1 ? 's' : ''} encontrado
+            {sortedEvents.length !== 1 ? 's' : ''}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {paginatedEvents.map((event) => (
