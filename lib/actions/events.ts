@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { saveImage } from '@/lib/upload';
+import sharp from 'sharp';
 
 async function getSession() {
   return await auth.api.getSession({
@@ -119,5 +120,16 @@ export async function uploadBanner(formData: FormData): Promise<string> {
     throw new Error('No file provided');
   }
 
-  return saveImage(file);
+  //comprimir y transformar a webp
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const bytes = await sharp(buffer)
+    .resize({ width: 1200 })
+    .webp({ quality: 80 })
+    .toBuffer()
+    .catch((err) => {
+      console.error('Error al optimizar la imagen:', err);
+      throw new Error('Failed to optimize image');
+    });
+  return saveImage(bytes, file.name);
 }
