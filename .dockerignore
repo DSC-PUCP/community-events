@@ -1,5 +1,16 @@
 node_modules
 .next
 .git
+.github
+.husky
+.vscode
+.idea
 *.log
 .env*.local
+README.md
+CONTRIBUTING.md
+LICENSE
+docs
+tests
+*.orig
+*.bak
