@@ -513,7 +513,7 @@ export default function EventDetailPage({
                             ? 'WhatsApp'
                             : contact.type === 'email'
                               ? 'Email'
-                              : 'Website'}
+                              : 'Sitio Web'}
                         </a>
                       ))}
                     </div>
