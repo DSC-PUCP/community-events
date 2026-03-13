@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, signIn } from '@/lib/auth-client';
+import { signIn, useSession } from '@/lib/auth-client';
 
 export default function Page() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function Page() {
 
       if (result.error) {
         console.error(result.error);
-        setError(result.error.message || 'Invalid credentials');
+        setError(result.error.message || 'Credenciales inválidas');
       } else {
         if (!session?.user) {
           router.push('/login');
@@ -40,7 +40,7 @@ export default function Page() {
         }
       }
     } catch {
-      setError('An error occurred. Please try again.');
+      setError('Ha ocurrido un error. Por favor, inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }

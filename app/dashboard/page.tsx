@@ -4,18 +4,17 @@ import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
-  getEventsByOrgId,
   deleteEvent,
   getAllEvents,
+  getEventsByOrgId,
 } from '@/lib/actions/events';
 import {
-  getAllOrganizations,
   createOrganization,
   deleteOrganization,
+  getAllOrganizations,
 } from '@/lib/actions/organizations';
 import Link from 'next/link';
-import type { Event } from '@/lib/types';
-import type { Organization } from '@/lib/types';
+import type { Event, Organization } from '@/lib/types';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -70,7 +69,7 @@ export default function DashboardPage() {
   if (!session?.user) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-slate-500">Loading...</div>
+        <div className="text-slate-500">Cargando...</div>
       </div>
     );
   }
@@ -133,7 +132,7 @@ export default function DashboardPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">
-            {isAdmin ? 'Admin Dashboard' : 'Organization Dashboard'}
+            {isAdmin ? 'Dashboard de Admin' : 'Dashboard de Organización'}
           </h1>
           <p className="text-slate-600 mt-2">
             Bienvenido, {session.user.name || session.user.email}
