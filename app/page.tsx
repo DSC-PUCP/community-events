@@ -100,7 +100,7 @@ export default function HomePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
-          Descubre <span className="text-indigo-600">eventos comunitarios</span>{' '}
+          Descubre <span className="text-brand-600">eventos comunitarios</span>{' '}
           en nuestro campus
         </h1>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -128,7 +128,7 @@ export default function HomePage() {
           <input
             type="text"
             placeholder="Busca eventos, temas u organizaciones..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -179,8 +179,8 @@ export default function HomePage() {
             onClick={() => toggleCategory(cat.id)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
               selectedCats.includes(cat.id)
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-400'
+                ? 'bg-brand-600 text-white shadow-md'
+                : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-400'
             }`}
           >
             {cat.name}
@@ -224,7 +224,7 @@ export default function HomePage() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-9 h-9 rounded-xl text-sm font-bold transition-colors ${
                         page === currentPage
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-brand-600 text-white'
                           : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >

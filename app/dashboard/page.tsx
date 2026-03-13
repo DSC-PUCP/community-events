@@ -141,7 +141,7 @@ export default function DashboardPage() {
         {!isAdmin && (
           <Link
             href="/events/new"
-            className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2"
+            className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors flex items-center gap-2"
           >
             <svg
               className="w-5 h-5"
@@ -166,7 +166,7 @@ export default function DashboardPage() {
         {isAdmin ? (
           <>
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="text-2xl font-bold text-indigo-600 mb-2">
+              <div className="text-2xl font-bold text-brand-600 mb-2">
                 {orgs.length}
               </div>
               <div className="text-slate-600">Organizaciones</div>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
         ) : (
           <>
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="text-2xl font-bold text-indigo-600 mb-2">
+              <div className="text-2xl font-bold text-brand-600 mb-2">
                 {events.length}
               </div>
               <div className="text-slate-600">Total de Eventos</div>
@@ -221,7 +221,7 @@ export default function DashboardPage() {
                   setTempPassword('');
                   setCreateOrgError('');
                 }}
-                className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-colors text-sm"
+                className="flex items-center gap-2 bg-brand-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-brand-700 transition-colors text-sm"
               >
                 <svg
                   className="w-4 h-4"
@@ -255,7 +255,7 @@ export default function DashboardPage() {
                     key={org.id}
                     className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-lg shrink-0">
                       {org.name?.charAt(0)?.toUpperCase() ?? '?'}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -267,7 +267,7 @@ export default function DashboardPage() {
                     <div className="flex gap-2 shrink-0">
                       <Link
                         href={`/organizations/${org.id}`}
-                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                         title="Ver perfil"
                       >
                         <svg
@@ -292,7 +292,7 @@ export default function DashboardPage() {
                       </Link>
                       <Link
                         href={`/organizations/${org.id}/edit`}
-                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                         title="Editar"
                       >
                         <svg
@@ -342,7 +342,7 @@ export default function DashboardPage() {
               <h2 className="text-xl font-bold text-slate-900">Mis Eventos</h2>
               <Link
                 href={`/organizations/${session.user.id}/edit`}
-                className="text-sm font-semibold text-indigo-600 hover:underline"
+                className="text-sm font-semibold text-brand-600 hover:underline"
               >
                 Editar perfil de organización →
               </Link>
@@ -359,7 +359,7 @@ export default function DashboardPage() {
                 </p>
                 <Link
                   href="/events/new"
-                  className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors inline-block"
+                  className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors inline-block"
                 >
                   Crear primer evento
                 </Link>
@@ -392,7 +392,7 @@ export default function DashboardPage() {
                         </div>
                         <Link
                           href={`/events/${event.id}`}
-                          className="font-bold text-slate-900 hover:text-indigo-600 transition-colors truncate block"
+                          className="font-bold text-slate-900 hover:text-brand-600 transition-colors truncate block"
                         >
                           {event.title}
                         </Link>
@@ -408,7 +408,7 @@ export default function DashboardPage() {
                       <div className="flex gap-2 flex-shrink-0">
                         <Link
                           href={`/events/${event.id}/edit`}
-                          className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                           title="Editar"
                         >
                           <svg
@@ -530,7 +530,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-slate-500 mb-1">
                     Contraseña temporal
                   </p>
-                  <p className="text-2xl font-mono font-bold text-indigo-600 tracking-widest">
+                  <p className="text-2xl font-mono font-bold text-brand-600 tracking-widest">
                     {tempPassword}
                   </p>
                 </div>
@@ -543,7 +543,7 @@ export default function DashboardPage() {
                     setCreateOrgModal(false);
                     setTempPassword('');
                   }}
-                  className="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
+                  className="w-full py-3 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-colors"
                 >
                   Listo
                 </button>
@@ -563,7 +563,7 @@ export default function DashboardPage() {
                     value={newOrgEmail}
                     onChange={(e) => setNewOrgEmail(e.target.value)}
                     placeholder="org@pucp.edu.pe"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none"
                   />
                   <p className="text-xs text-slate-500 mt-1">
                     Se generará una contraseña temporal automáticamente.
@@ -588,7 +588,7 @@ export default function DashboardPage() {
                   <button
                     type="submit"
                     disabled={createOrgLoading}
-                    className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-colors disabled:opacity-50"
                   >
                     {createOrgLoading ? 'Creando...' : 'Crear'}
                   </button>
