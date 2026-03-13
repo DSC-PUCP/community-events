@@ -1,4 +1,4 @@
-import { writeFile, mkdir } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { env } from './env';
 
@@ -10,9 +10,9 @@ export async function saveImage(
   await mkdir(uploadDir, { recursive: true });
 
   const baseName = fileName.replace(/\.[^/.]+$/, '');
-  const fileName1 = `${Date.now()}-${baseName}.webp`;
-  const path = join(uploadDir, fileName1);
+  const parsedFileName = `${Date.now()}-${baseName}.webp`;
+  const path = join(uploadDir, parsedFileName);
 
   await writeFile(path, buffer);
-  return `/community-events/uploads/${fileName1}`;
+  return `/community-events/uploads/${parsedFileName}`;
 }
