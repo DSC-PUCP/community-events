@@ -69,7 +69,7 @@ export default function ChangePasswordPage() {
             </label>
             <input
               type="password"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="••••••••"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
@@ -82,7 +82,7 @@ export default function ChangePasswordPage() {
             </label>
             <input
               type="password"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="••••••••"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -95,7 +95,7 @@ export default function ChangePasswordPage() {
             </label>
             <input
               type="password"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -105,7 +105,7 @@ export default function ChangePasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="w-full bg-brand-600 text-white py-4 rounded-2xl font-bold hover:bg-brand-700 transition-colors disabled:opacity-50"
           >
             {loading ? 'Actualizando...' : 'Actualizar y continuar'}
           </button>
