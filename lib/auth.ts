@@ -44,7 +44,7 @@ export const auth = betterAuth({
               data: {
                 ...user,
                 role: 'admin',
-                isFirstLogin: false,
+                isFirstLogin: user.isFirstLogin ?? false,
               },
             };
           }

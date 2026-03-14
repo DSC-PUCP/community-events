@@ -12,6 +12,12 @@ const envSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.url(),
   UPLOAD_DIR: z.string().default('./public/uploads'),
   ADMIN_EMAIL: z.string().email().optional(),
+  ADMIN_PASSWORD: z.string().min(8).optional(),
 });
 
-export const env = envSchema.parse(process.env);
+const parsed = envSchema.safeParse(process.env);
+if (!parsed.success) {
+  throw new Error(z.prettifyError(parsed.error));
+}
+
+export const env: Readonly<z.infer<typeof envSchema>> = parsed.data;
