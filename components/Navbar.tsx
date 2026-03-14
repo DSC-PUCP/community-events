@@ -19,7 +19,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link href="/" className="flex items-center cursor-pointer">
-            <div className="bg-indigo-600 p-2 rounded-lg mr-2">
+            <div className="bg-brand-600 p-2 rounded-lg mr-2">
               <svg
                 className="w-6 h-6 text-white"
                 fill="none"
@@ -34,7 +34,7 @@ export default function Navbar() {
                 />
               </svg>
             </div>
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-violet-600">
               CampusPulse
             </span>
           </Link>
@@ -43,7 +43,7 @@ export default function Navbar() {
             {!user ? (
               <Link
                 href="/login"
-                className="text-slate-600 hover:text-indigo-600 font-medium px-4 py-2 transition-colors"
+                className="text-slate-600 hover:text-brand-600 font-medium px-4 py-2 transition-colors"
               >
                 Iniciar Sesión
               </Link>
@@ -51,7 +51,7 @@ export default function Navbar() {
               <div className="flex items-center gap-4">
                 <Link
                   href="/dashboard"
-                  className="text-slate-600 hover:text-indigo-600 font-medium px-4 py-2"
+                  className="text-slate-600 hover:text-brand-600 font-medium px-4 py-2"
                 ></Link>
                 <button
                   onClick={handleLogout}

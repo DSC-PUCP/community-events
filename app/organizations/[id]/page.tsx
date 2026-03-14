@@ -64,7 +64,7 @@ export default function OrgProfilePage({
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center text-slate-500 hover:text-indigo-600 transition-colors mb-8 font-medium"
+        className="flex items-center text-slate-500 hover:text-brand-600 transition-colors mb-8 font-medium"
       >
         <svg
           className="w-5 h-5 mr-1"
@@ -84,7 +84,7 @@ export default function OrgProfilePage({
 
       {/* Header card */}
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-        <div className="h-36 bg-gradient-to-r from-indigo-500 to-purple-600" />
+        <div className="h-36 bg-gradient-to-r from-brand-500 to-purple-600" />
         <div className="px-8 pb-8">
           <div className="-mt-12 mb-6">
             {org.image ? (
@@ -95,7 +95,7 @@ export default function OrgProfilePage({
                 className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover"
               />
             ) : (
-              <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg bg-white flex items-center justify-center text-indigo-600 text-4xl font-bold">
+              <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg bg-white flex items-center justify-center text-brand-600 text-4xl font-bold">
                 {org.name?.charAt(0)?.toUpperCase() ?? '?'}
               </div>
             )}
@@ -135,7 +135,7 @@ export default function OrgProfilePage({
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 hover:border-indigo-300 hover:text-indigo-600 transition-all text-sm font-medium"
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 hover:border-brand-300 hover:text-brand-600 transition-all text-sm font-medium"
                   >
                     {contact.type === 'whatsapp' && (
                       <svg
@@ -163,7 +163,7 @@ export default function OrgProfilePage({
                     )}
                     {contact.type === 'link' && (
                       <svg
-                        className="w-4 h-4 text-indigo-500"
+                        className="w-4 h-4 text-brand-500"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -200,7 +200,7 @@ export default function OrgProfilePage({
             key={stat.label}
             className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-center"
           >
-            <div className="text-3xl font-extrabold text-indigo-600 mb-1">
+            <div className="text-3xl font-extrabold text-brand-600 mb-1">
               {stat.value}
             </div>
             <div className="text-sm text-slate-500 font-medium">
@@ -275,7 +275,7 @@ function EventRow({
   return (
     <Link
       href={`/events/${event.id}`}
-      className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all group"
+      className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-brand-200 hover:bg-brand-50/30 transition-all group"
     >
       {event.banner && (
         // eslint-disable-next-line @next/next/no-img-element
@@ -295,13 +295,13 @@ function EventRow({
           {eventCats.slice(0, 2).map((c) => (
             <span
               key={c.id}
-              className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full"
+              className="text-xs font-semibold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full"
             >
               {c.name}
             </span>
           ))}
         </div>
-        <p className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
+        <p className="font-bold text-slate-900 group-hover:text-brand-600 transition-colors truncate">
           {event.title}
         </p>
         <p className="text-sm text-slate-500">
@@ -314,7 +314,7 @@ function EventRow({
         </p>
       </div>
       <svg
-        className="w-5 h-5 text-slate-300 group-hover:text-indigo-400 shrink-0 transition-colors"
+        className="w-5 h-5 text-slate-300 group-hover:text-brand-400 shrink-0 transition-colors"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

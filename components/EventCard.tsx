@@ -38,7 +38,7 @@ const EventCard: React.FC<EventCardProps> = ({
           {eventCategories.map((cat) => (
             <span
               key={cat.id}
-              className="bg-white/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-indigo-700 border border-indigo-100"
+              className="bg-white/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-brand-700 border border-brand-100"
             >
               {cat.name}
             </span>
@@ -46,7 +46,7 @@ const EventCard: React.FC<EventCardProps> = ({
         </div>
       </div>
       <div className="p-4">
-        <div className="flex items-center text-indigo-600 text-xs font-semibold mb-2">
+        <div className="flex items-center text-brand-600 text-xs font-semibold mb-2">
           <svg
             className="w-3.5 h-3.5 mr-1"
             fill="none"

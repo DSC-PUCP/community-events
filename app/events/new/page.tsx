@@ -106,7 +106,7 @@ export default function NewEventPage() {
     <div className="max-w-3xl mx-auto px-4 py-10">
       <button
         onClick={() => router.back()}
-        className="flex items-center text-slate-500 hover:text-indigo-600 transition-colors mb-8 font-medium"
+        className="flex items-center text-slate-500 hover:text-brand-600 transition-colors mb-8 font-medium"
       >
         <svg
           className="w-5 h-5 mr-1"
@@ -148,7 +148,7 @@ export default function NewEventPage() {
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
             placeholder="Nombre del evento"
           />
         </div>
@@ -163,7 +163,7 @@ export default function NewEventPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             placeholder="Describe el evento..."
           />
         </div>
@@ -178,7 +178,7 @@ export default function NewEventPage() {
             type="file"
             accept="image/*"
             onChange={handleFileChange}
-            className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
           />
           <div className="flex items-center gap-3">
             {bannerFile && (
@@ -216,7 +216,7 @@ export default function NewEventPage() {
               setBannerUrl(e.target.value);
               setPreviewUrl(e.target.value);
             }}
-            className="w-full mt-2 px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full mt-2 px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
             placeholder="https://..."
           />
           {previewUrl && (
@@ -239,7 +239,7 @@ export default function NewEventPage() {
             required
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
             placeholder="PUCP - Auditorio de Estudios Generales"
           />
         </div>
@@ -255,7 +255,7 @@ export default function NewEventPage() {
               required
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -267,7 +267,7 @@ export default function NewEventPage() {
               required
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -286,7 +286,7 @@ export default function NewEventPage() {
                   onClick={() => toggleCategory(cat.id)}
                   className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
                     selectedCategories.includes(cat.id)
-                      ? 'bg-indigo-600 text-white'
+                      ? 'bg-brand-600 text-white'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
@@ -311,7 +311,7 @@ export default function NewEventPage() {
                 type="url"
                 value={registrationLink}
                 onChange={(e) => setRegistrationLink(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="https://forms.gle/..."
               />
             </div>
@@ -323,7 +323,7 @@ export default function NewEventPage() {
                 type="text"
                 value={whatsappContact}
                 onChange={(e) => setWhatsappContact(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="+51 999 999 999"
               />
             </div>
@@ -341,7 +341,7 @@ export default function NewEventPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="flex-1 py-3 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-colors disabled:opacity-50"
           >
             {loading ? 'Creando...' : 'Crear Evento'}
           </button>

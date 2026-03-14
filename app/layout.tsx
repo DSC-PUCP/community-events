@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'CampusPulse - Discover Campus Events',
-  description: 'Find the best student-led events and activities on campus',
+  description: 'Encuentra las mejores actividades organizadas por estudiantes.',
 };
 
 export default function RootLayout({
