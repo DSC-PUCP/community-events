@@ -11,8 +11,7 @@ import {
   getToday,
   getThisWeek,
   getThisMonth,
-  getNext7Days,
-  getNext30Days,
+  futureDateString,
   areDateRangesEqual,
 } from '@/lib/utils/date-helpers';
 
@@ -36,14 +35,21 @@ export default function HomePage() {
   const [organizations, setOrganizations] = useState<
     { id: string; name: string }[]
   >([]);
-  const [search, setSearch] = useState('');
-  const [selectedCats, setSelectedCats] = useState<number[]>([]);
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
-  const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState<SortOption>('date-desc');
 
+  // Read all filters directly from URL
+  const search = searchParams.get('q') || '';
+  const selectedCats =
+    searchParams.get('cats')?.split(',').map(Number).filter(Boolean) || [];
+  const dateRange = {
+    start: searchParams.get('dateStart') || '',
+    end: searchParams.get('dateEnd') || '',
+  };
+  const selectedOrg = searchParams.get('org') || null;
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const sortBy = (searchParams.get('sort') || 'date-desc') as SortOption;
+
+  // Load initial data only once
   useEffect(() => {
     async function loadData() {
       try {
@@ -56,23 +62,6 @@ export default function HomePage() {
         setEvents(eventsData);
         setCategories(categoriesData);
         setOrganizations(organizationsData);
-
-        const urlSearch = searchParams.get('q') || '';
-        const urlCats =
-          searchParams.get('cats')?.split(',').map(Number).filter(Boolean)
-          || [];
-        const urlDateStart = searchParams.get('dateStart') || '';
-        const urlDateEnd = searchParams.get('dateEnd') || '';
-        const urlOrg = searchParams.get('org') || null;
-        const urlPage = parseInt(searchParams.get('page') || '1', 10);
-        const urlSort = (searchParams.get('sort') || 'date-desc') as SortOption;
-
-        setSearch(urlSearch);
-        setSelectedCats(urlCats);
-        setDateRange({ start: urlDateStart, end: urlDateEnd });
-        setSelectedOrg(urlOrg);
-        setCurrentPage(urlPage);
-        setSortBy(urlSort);
       } catch (error) {
         console.error('Failed to load data:', error);
       } finally {
@@ -80,38 +69,35 @@ export default function HomePage() {
       }
     }
     void loadData();
-  }, [searchParams]);
+  }, []);
 
-  useEffect(() => {
-    const params = new URLSearchParams();
+  // Single function to update URL params
+  const updateFilters = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
 
-    if (search) params.set('q', search);
-    if (selectedCats.length > 0) params.set('cats', selectedCats.join(','));
-    if (dateRange.start) params.set('dateStart', dateRange.start);
-    if (dateRange.end) params.set('dateEnd', dateRange.end);
-    if (selectedOrg) params.set('org', selectedOrg);
-    if (currentPage > 1) params.set('page', currentPage.toString());
-    if (sortBy !== 'date-desc') params.set('sort', sortBy);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === '') {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
 
-    const newUrl = params.toString()
-      ? `${pathname}?${params.toString()}`
-      : pathname;
+    // Reset to page 1 if any filter (not page) changed
+    const filterKeys = ['q', 'cats', 'dateStart', 'dateEnd', 'org', 'sort'];
+    if (Object.keys(updates).some((k) => filterKeys.includes(k))) {
+      params.delete('page');
+    }
 
-    router.replace(newUrl);
-  }, [
-    search,
-    selectedCats,
-    dateRange,
-    selectedOrg,
-    currentPage,
-    sortBy,
-    pathname,
-    router,
-  ]);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, selectedCats, dateRange, selectedOrg]);
+  const toggleCategory = (id: number) => {
+    const newCats = selectedCats.includes(id)
+      ? selectedCats.filter((x) => x !== id)
+      : [...selectedCats, id];
+    updateFilters({ cats: newCats.length > 0 ? newCats.join(',') : null });
+  };
 
   const filteredEvents = useMemo(() => {
     return events.filter((ev) => {
@@ -172,12 +158,6 @@ export default function HomePage() {
     }
   }, [filteredEvents, sortBy]);
 
-  const toggleCategory = (id: number) => {
-    setSelectedCats((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
   const totalPages = Math.max(1, Math.ceil(sortedEvents.length / PAGE_SIZE));
   const paginatedEvents = sortedEvents.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -228,18 +208,20 @@ export default function HomePage() {
               placeholder="Busca eventos, temas u organizaciones..."
               className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => updateFilters({ q: e.target.value })}
             />
           </div>
         </div>
 
-        {/* FILA 2: Presets de fecha */}
         <div className="flex flex-wrap gap-2">
           <span className="text-sm font-medium text-slate-600 self-center mr-2">
             Fecha:
           </span>
           <button
-            onClick={() => setDateRange(getToday())}
+            onClick={() => {
+              const range = getToday();
+              updateFilters({ dateStart: range.start, dateEnd: range.end });
+            }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               areDateRangesEqual(dateRange, getToday())
                 ? 'bg-indigo-600 text-white shadow-md'
@@ -249,7 +231,10 @@ export default function HomePage() {
             Hoy
           </button>
           <button
-            onClick={() => setDateRange(getThisWeek())}
+            onClick={() => {
+              const range = getThisWeek();
+              updateFilters({ dateStart: range.start, dateEnd: range.end });
+            }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               areDateRangesEqual(dateRange, getThisWeek())
                 ? 'bg-indigo-600 text-white shadow-md'
@@ -259,7 +244,10 @@ export default function HomePage() {
             Esta semana
           </button>
           <button
-            onClick={() => setDateRange(getThisMonth())}
+            onClick={() => {
+              const range = getThisMonth();
+              updateFilters({ dateStart: range.start, dateEnd: range.end });
+            }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               areDateRangesEqual(dateRange, getThisMonth())
                 ? 'bg-indigo-600 text-white shadow-md'
@@ -269,9 +257,12 @@ export default function HomePage() {
             Este mes
           </button>
           <button
-            onClick={() => setDateRange(getNext7Days())}
+            onClick={() => {
+              const range = futureDateString(7);
+              updateFilters({ dateStart: range.start, dateEnd: range.end });
+            }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              areDateRangesEqual(dateRange, getNext7Days())
+              areDateRangesEqual(dateRange, futureDateString(7))
                 ? 'bg-indigo-600 text-white shadow-md'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
@@ -279,9 +270,12 @@ export default function HomePage() {
             Próximos 7d
           </button>
           <button
-            onClick={() => setDateRange(getNext30Days())}
+            onClick={() => {
+              const range = futureDateString(30);
+              updateFilters({ dateStart: range.start, dateEnd: range.end });
+            }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              areDateRangesEqual(dateRange, getNext30Days())
+              areDateRangesEqual(dateRange, futureDateString(30))
                 ? 'bg-indigo-600 text-white shadow-md'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
@@ -298,28 +292,23 @@ export default function HomePage() {
               type="date"
               className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
               value={dateRange.start}
-              onChange={(e) =>
-                setDateRange((prev) => ({ ...prev, start: e.target.value }))
-              }
+              onChange={(e) => updateFilters({ dateStart: e.target.value })}
             />
             <span className="text-slate-400 text-xs">→</span>
             <input
               type="date"
               className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
               value={dateRange.end}
-              onChange={(e) =>
-                setDateRange((prev) => ({ ...prev, end: e.target.value }))
-              }
+              onChange={(e) => updateFilters({ dateEnd: e.target.value })}
             />
           </div>
 
           {/* Separador vertical */}
           <div className="hidden md:block h-8 w-px bg-slate-200"></div>
 
-          {/* Organización */}
           <select
             value={selectedOrg ?? ''}
-            onChange={(e) => setSelectedOrg(e.target.value || null)}
+            onChange={(e) => updateFilters({ org: e.target.value || null })}
             className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
           >
             <option value="">Todas las organizaciones</option>
@@ -330,10 +319,9 @@ export default function HomePage() {
             ))}
           </select>
 
-          {/* Ordenamiento */}
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            onChange={(e) => updateFilters({ sort: e.target.value })}
             className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
           >
             <option value="date-desc">Más recientes</option>
@@ -347,17 +335,8 @@ export default function HomePage() {
           {/* Spacer para empujar el botón a la derecha en desktop */}
           <div className="flex-1 hidden lg:block"></div>
 
-          {/* Botón limpiar */}
           <button
-            onClick={() => {
-              setSearch('');
-              setSelectedCats([]);
-              setDateRange({ start: '', end: '' });
-              setSelectedOrg(null);
-              setCurrentPage(1);
-              setSortBy('date-desc');
-              router.replace(pathname);
-            }}
+            onClick={() => router.replace(pathname)}
             className="px-4 py-2 rounded-xl border-2 border-slate-300 text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-2"
           >
             <svg
@@ -416,7 +395,11 @@ export default function HomePage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-10">
               <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                onClick={() =>
+                  updateFilters({
+                    page: Math.max(1, currentPage - 1).toString(),
+                  })
+                }
                 disabled={currentPage === 1}
                 className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
@@ -427,7 +410,7 @@ export default function HomePage() {
                   (page) => (
                     <button
                       key={page}
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => updateFilters({ page: page.toString() })}
                       className={`w-9 h-9 rounded-xl text-sm font-bold transition-colors ${
                         page === currentPage
                           ? 'bg-indigo-600 text-white'
@@ -441,7 +424,9 @@ export default function HomePage() {
               </div>
               <button
                 onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  updateFilters({
+                    page: Math.min(totalPages, currentPage + 1).toString(),
+                  })
                 }
                 disabled={currentPage === totalPages}
                 className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"

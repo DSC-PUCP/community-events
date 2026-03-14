@@ -4,15 +4,6 @@
  */
 
 /**
- * Obtiene el rango de fechas para "Hoy"
- */
-export function getToday(): { start: string; end: string } {
-  const today = new Date();
-  const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
-  return { start: dateStr, end: dateStr };
-}
-
-/**
  * Obtiene el rango de fechas para "Esta semana" (Lunes a Domingo)
  */
 export function getThisWeek(): { start: string; end: string } {
@@ -52,31 +43,20 @@ export function getThisMonth(): { start: string; end: string } {
   };
 }
 
-/**
- * Obtiene el rango de fechas para "Próximos 7 días"
- */
-export function getNext7Days(): { start: string; end: string } {
-  const today = new Date();
-  const next7 = new Date(today);
-  next7.setDate(today.getDate() + 7);
-
-  return {
-    start: today.toISOString().split('T')[0],
-    end: next7.toISOString().split('T')[0],
-  };
+export function getToday(): { start: string; end: string } {
+  return futureDateString(0);
 }
 
-/**
- * Obtiene el rango de fechas para "Próximos 30 días"
- */
-export function getNext30Days(): { start: string; end: string } {
+export function futureDateString(daysFromToday: number): {
+  start: string;
+  end: string;
+} {
   const today = new Date();
-  const next30 = new Date(today);
-  next30.setDate(today.getDate() + 30);
-
+  const futureDate = new Date(today);
+  futureDate.setDate(today.getDate() + daysFromToday);
   return {
     start: today.toISOString().split('T')[0],
-    end: next30.toISOString().split('T')[0],
+    end: futureDate.toISOString().split('T')[0],
   };
 }
 
