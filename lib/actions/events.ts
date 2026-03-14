@@ -38,8 +38,16 @@ export async function createEvent(
     throw new Error('Unauthorized');
   }
 
+  if (session.user.role !== 'admin' && data.orgId !== session.user.id) {
+    throw new Error('Unauthorized');
+  }
+
+  const resolvedOrgId =
+    session.user.role === 'admin' ? session.user.id : data.orgId;
+
   const newEvent: NewEvent = {
     ...data,
+    orgId: resolvedOrgId,
     id: Date.now().toString(),
   };
 

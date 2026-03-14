@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { createEvent, uploadBanner } from '@/lib/actions/events';
@@ -55,6 +55,11 @@ export default function NewEventPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!session?.user) {
+      setError('Sesión no válida. Vuelve a iniciar sesión.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
@@ -82,7 +87,7 @@ export default function NewEventPage() {
         endDate: new Date(endDate),
         registrationLink: registrationLink || null,
         whatsappContact: whatsappContact || null,
-        orgId: session!.user!.id,
+        orgId: session.user.id,
         categories: selectedCategories,
       });
 
