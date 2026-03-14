@@ -10,6 +10,8 @@
 
 2. Copia el `.env.example` a `.env`.
 
+   Si quieres bootstrap de admin en local, define `ADMIN_EMAIL` (y opcionalmente `ADMIN_PASSWORD`).
+
 3. Instala las dependencias y crea la BD local:
 
    ```

@@ -94,15 +94,6 @@ export default function Page() {
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <p className="text-xs text-slate-400 text-center uppercase tracking-widest font-bold">
-            Cuenta demo
-          </p>
-          <p className="text-xs text-slate-500 text-center mt-2">
-            Admin: dsc-admin@pucp.edu.pe / admin123
-          </p>
-        </div>
       </div>
     </div>
   );
