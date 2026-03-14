@@ -167,7 +167,7 @@ export default function HomePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-slate-500">Loading events...</div>
+        <div className="text-slate-500">Cargando eventos...</div>
       </div>
     );
   }
