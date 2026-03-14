@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { createEvent, uploadBanner } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
+import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import type { Category } from '@/lib/types';
 
-export default function NewEventPage() {
+function NewEventPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -27,6 +29,7 @@ export default function NewEventPage() {
   const [registrationLink, setRegistrationLink] = useState('');
   const [whatsappContact, setWhatsappContact] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const returnTo = resolveReturnTo(searchParams.get('returnTo'), '/dashboard');
 
   useEffect(() => {
     getAllCategories().then(setCategories).catch(console.error);
@@ -91,7 +94,7 @@ export default function NewEventPage() {
         categories: selectedCategories,
       });
 
-      router.push(`/events/${event.id}`);
+      router.replace(appendReturnTo(`/events/${event.id}`, returnTo));
     } catch (err) {
       setError((err as Error).message || 'Error al crear el evento.');
     } finally {
@@ -110,7 +113,7 @@ export default function NewEventPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <button
-        onClick={() => router.back()}
+        onClick={() => router.push(returnTo)}
         className="flex items-center text-slate-500 hover:text-brand-600 transition-colors mb-8 font-medium"
       >
         <svg
@@ -338,7 +341,7 @@ export default function NewEventPage() {
         <div className="flex gap-3 pt-2">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push(returnTo)}
             className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
           >
             Cancelar
@@ -353,5 +356,19 @@ export default function NewEventPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function NewEventPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-slate-500">Cargando...</div>
+        </div>
+      }
+    >
+      <NewEventPageContent />
+    </Suspense>
   );
 }

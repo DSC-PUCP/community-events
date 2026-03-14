@@ -1,11 +1,16 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getOrganizationById } from '@/lib/actions/organizations';
 import { getEventsByOrgId } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
+import {
+  appendReturnTo,
+  buildReturnTo,
+  resolveReturnTo,
+} from '@/lib/utils/navigation';
 import type { Organization, Event, Category } from '@/lib/types';
 
 export default function OrgProfilePage({
@@ -15,6 +20,8 @@ export default function OrgProfilePage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [org, setOrg] = useState<Organization | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
@@ -58,12 +65,14 @@ export default function OrgProfilePage({
   const now = new Date();
   const upcomingEvents = events.filter((e) => new Date(e.startDate) >= now);
   const pastEvents = events.filter((e) => new Date(e.startDate) < now);
+  const backDestination = resolveReturnTo(searchParams.get('returnTo'), '/');
+  const currentPage = buildReturnTo(pathname, searchParams);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
       {/* Back button */}
       <button
-        onClick={() => router.back()}
+        onClick={() => router.push(backDestination)}
         className="flex items-center text-slate-500 hover:text-brand-600 transition-colors mb-8 font-medium"
       >
         <svg
@@ -84,7 +93,7 @@ export default function OrgProfilePage({
 
       {/* Header card */}
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-        <div className="h-36 bg-gradient-to-r from-brand-500 to-purple-600" />
+        <div className="h-36 bg-linear-to-r from-brand-500 to-purple-600" />
         <div className="px-8 pb-8">
           <div className="-mt-12 mb-6">
             {org.image ? (
@@ -230,7 +239,12 @@ export default function OrgProfilePage({
                 </h3>
                 <div className="space-y-3">
                   {upcomingEvents.map((ev) => (
-                    <EventRow key={ev.id} event={ev} categories={categories} />
+                    <EventRow
+                      key={ev.id}
+                      event={ev}
+                      categories={categories}
+                      returnTo={currentPage}
+                    />
                   ))}
                 </div>
               </div>
@@ -247,6 +261,7 @@ export default function OrgProfilePage({
                       key={ev.id}
                       event={ev}
                       categories={categories}
+                      returnTo={currentPage}
                       isPast
                     />
                   ))}
@@ -263,10 +278,12 @@ export default function OrgProfilePage({
 function EventRow({
   event,
   categories,
+  returnTo,
   isPast = false,
 }: {
   event: Event;
   categories: Category[];
+  returnTo: string;
   isPast?: boolean;
 }) {
   const eventCats = categories.filter((c) => event.categories.includes(c.id));
@@ -274,7 +291,7 @@ function EventRow({
 
   return (
     <Link
-      href={`/events/${event.id}`}
+      href={appendReturnTo(`/events/${event.id}`, returnTo)}
       className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-brand-200 hover:bg-brand-50/30 transition-all group"
     >
       {event.banner && (

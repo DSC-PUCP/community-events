@@ -14,6 +14,7 @@ import {
   futureDateString,
   areDateRangesEqual,
 } from '@/lib/utils/date-helpers';
+import { appendReturnTo, buildReturnTo } from '@/lib/utils/navigation';
 
 const PAGE_SIZE = 8;
 
@@ -29,6 +30,7 @@ export default function HomePage() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const returnTo = buildReturnTo(pathname, searchParams);
 
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -393,7 +395,9 @@ export default function HomePage() {
                 key={event.id}
                 event={event}
                 categories={categories}
-                onClick={(ev) => router.push(`/events/${ev.id}`)}
+                onClick={(ev) =>
+                  router.push(appendReturnTo(`/events/${ev.id}`, returnTo))
+                }
               />
             ))}
           </div>

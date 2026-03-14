@@ -1,11 +1,12 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { deleteEvent, getEventById } from '@/lib/actions/events';
 import { getOrganizationById } from '@/lib/actions/organizations';
 import { getAllCategories } from '@/lib/actions/categories';
 import { useSession } from '@/lib/auth-client';
+import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import Link from 'next/link';
 import type { Category, Event, Organization } from '@/lib/types';
 
@@ -16,6 +17,7 @@ export default function EventDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [event, setEvent] = useState<Event | null>(null);
   const [org, setOrg] = useState<Organization | null>(null);
@@ -90,13 +92,18 @@ export default function EventDetailPage({
 
   const canManage =
     session?.user?.role === 'admin' || session?.user?.id === event?.orgId;
+  const backDestination = resolveReturnTo(
+    searchParams.get('returnTo'),
+    session?.user ? '/dashboard' : '/',
+  );
+  const editBackTo = appendReturnTo(`/events/${id}`, backDestination);
 
   const handleDelete = async () => {
     setDeleteError('');
     setDeleteLoading(true);
     try {
       await deleteEvent(id);
-      router.push('/dashboard');
+      router.push(backDestination);
     } catch (err) {
       setDeleteError((err as Error).message || 'Error al eliminar el evento.');
       setDeleteLoading(false);
@@ -107,7 +114,7 @@ export default function EventDetailPage({
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="flex items-center justify-between mb-8">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(backDestination)}
           className="flex items-center text-slate-500 hover:text-brand-600 transition-colors font-medium"
         >
           <svg
@@ -128,7 +135,7 @@ export default function EventDetailPage({
         {canManage && (
           <div className="flex gap-2">
             <Link
-              href={`/events/${id}/edit`}
+              href={`${appendReturnTo(`/events/${id}/edit`, backDestination)}&backTo=${encodeURIComponent(editBackTo)}`}
               className="flex items-center gap-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-200 transition-colors"
             >
               <svg
