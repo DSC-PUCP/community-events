@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { createEvent, uploadBanner } from '@/lib/actions/events';
@@ -8,7 +8,7 @@ import { getAllCategories } from '@/lib/actions/categories';
 import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import type { Category } from '@/lib/types';
 
-export default function NewEventPage() {
+function NewEventPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
@@ -356,5 +356,19 @@ export default function NewEventPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function NewEventPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-slate-500">Cargando...</div>
+        </div>
+      }
+    >
+      <NewEventPageContent />
+    </Suspense>
   );
 }
