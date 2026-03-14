@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   deleteEvent,
-  getAllEvents,
+  getAllEventStats,
   getEventsByOrgId,
 } from '@/lib/actions/events';
 import {
@@ -14,7 +14,7 @@ import {
   getAllOrganizations,
 } from '@/lib/actions/organizations';
 import Link from 'next/link';
-import type { Event, Organization } from '@/lib/types';
+import type { Event, EventStats, Organization } from '@/lib/types';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -27,7 +27,11 @@ export default function DashboardPage() {
 
   // Admin state
   const [orgs, setOrgs] = useState<Organization[]>([]);
-  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [eventStats, setEventStats] = useState<EventStats>({
+    total: 0,
+    upcoming: 0,
+    past: 0,
+  });
   const [orgsLoading, setOrgsLoading] = useState(false);
   const [createOrgModal, setCreateOrgModal] = useState(false);
   const [newOrgEmail, setNewOrgEmail] = useState('');
@@ -57,10 +61,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!session?.user || session.user.role !== 'admin') return;
     setOrgsLoading(true);
-    Promise.all([getAllOrganizations(), getAllEvents()])
-      .then(([orgsData, eventsData]) => {
+    Promise.all([getAllOrganizations(), getAllEventStats()])
+      .then(([orgsData, statsData]) => {
         setOrgs(orgsData);
-        setAllEvents(eventsData);
+        setEventStats(statsData);
       })
       .catch(console.error)
       .finally(() => setOrgsLoading(false));
@@ -171,13 +175,13 @@ export default function DashboardPage() {
             </div>
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <div className="text-2xl font-bold text-green-600 mb-2">
-                {allEvents.filter((e) => new Date(e.startDate) >= now).length}
+                {eventStats.upcoming}
               </div>
               <div className="text-slate-600">Eventos próximos</div>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <div className="text-2xl font-bold text-slate-600 mb-2">
-                {allEvents.length}
+                {eventStats.total}
               </div>
               <div className="text-slate-600">Total de eventos</div>
             </div>

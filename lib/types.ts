@@ -5,6 +5,12 @@ export interface Contact {
   value: string;
 }
 
+export interface EventStats {
+  total: number;
+  upcoming: number;
+  past: number;
+}
+
 export type {
   Organization,
   Event,
