@@ -13,6 +13,7 @@ import {
   deleteOrganization,
   getAllOrganizations,
 } from '@/lib/actions/organizations';
+import { appendReturnTo } from '@/lib/utils/navigation';
 import Link from 'next/link';
 import type { Event, EventStats, Organization } from '@/lib/types';
 
@@ -143,7 +144,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <Link
-          href="/events/new"
+          href={appendReturnTo('/events/new', '/dashboard')}
           className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors flex items-center gap-2"
         >
           <svg
@@ -268,7 +269,10 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <Link
-                        href={`/organizations/${org.id}`}
+                        href={appendReturnTo(
+                          `/organizations/${org.id}`,
+                          '/dashboard',
+                        )}
                         className="p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                         title="Ver perfil"
                       >
@@ -293,7 +297,10 @@ export default function DashboardPage() {
                         </svg>
                       </Link>
                       <Link
-                        href={`/organizations/${org.id}/edit`}
+                        href={appendReturnTo(
+                          `/organizations/${org.id}/edit`,
+                          '/dashboard',
+                        )}
                         className="p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                         title="Editar"
                       >
@@ -345,7 +352,10 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-900">Mis Eventos</h2>
           <Link
-            href={`/organizations/${session.user.id}/edit`}
+            href={appendReturnTo(
+              `/organizations/${session.user.id}/edit`,
+              '/dashboard',
+            )}
             className="text-sm font-semibold text-brand-600 hover:underline"
           >
             Editar perfil de organización →
@@ -362,7 +372,7 @@ export default function DashboardPage() {
               Aún no has creado ningún evento.
             </p>
             <Link
-              href="/events/new"
+              href={appendReturnTo('/events/new', '/dashboard')}
               className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors inline-block"
             >
               Crear primer evento
@@ -383,7 +393,7 @@ export default function DashboardPage() {
                     <img
                       src={event.banner}
                       alt={event.title}
-                      className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                      className="w-16 h-16 object-cover rounded-lg shrink-0"
                     />
                   )}
                   <div className="flex-1 min-w-0">
@@ -395,7 +405,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <Link
-                      href={`/events/${event.id}`}
+                      href={appendReturnTo(`/events/${event.id}`, '/dashboard')}
                       className="font-bold text-slate-900 hover:text-brand-600 transition-colors truncate block"
                     >
                       {event.title}
@@ -409,9 +419,12 @@ export default function DashboardPage() {
                       · {event.location}
                     </p>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0">
+                  <div className="flex gap-2 shrink-0">
                     <Link
-                      href={`/events/${event.id}/edit`}
+                      href={appendReturnTo(
+                        `/events/${event.id}/edit`,
+                        '/dashboard',
+                      )}
                       className="p-2 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                       title="Editar"
                     >
@@ -461,7 +474,7 @@ export default function DashboardPage() {
 
       {/* Modal de confirmación de borrado de evento */}
       {deleteModalEvent && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-110 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl p-8">
             <h2 className="text-xl font-bold text-slate-900 mb-3">
               ¿Eliminar evento?
@@ -501,7 +514,7 @@ export default function DashboardPage() {
 
       {/* Modal crear organización */}
       {createOrgModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-110 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl p-8">
             {tempPassword ? (
               <>
@@ -603,7 +616,7 @@ export default function DashboardPage() {
 
       {/* Modal eliminar organización */}
       {deleteOrgModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-110 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl p-8">
             <h2 className="text-xl font-bold text-slate-900 mb-3">
               ¿Eliminar organización?

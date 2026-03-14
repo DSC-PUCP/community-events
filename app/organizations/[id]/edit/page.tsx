@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import {
   getOrganizationById,
   updateOrganization,
 } from '@/lib/actions/organizations';
+import { resolveReturnTo } from '@/lib/utils/navigation';
 import type { Organization } from '@/lib/types';
 
 type Contact = { type: 'email' | 'whatsapp' | 'link'; value: string };
@@ -18,6 +19,7 @@ export default function EditOrganizationPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
 
   const [, setOrg] = useState<Organization | null>(null);
@@ -31,6 +33,7 @@ export default function EditOrganizationPage({
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const returnTo = resolveReturnTo(searchParams.get('returnTo'), '/dashboard');
 
   useEffect(() => {
     getOrganizationById(id)
@@ -107,7 +110,7 @@ export default function EditOrganizationPage({
             No tienes permisos para editar esta organización.
           </p>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push(returnTo)}
             className="text-brand-600 hover:underline"
           >
             Volver
@@ -120,7 +123,7 @@ export default function EditOrganizationPage({
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <button
-        onClick={() => router.push('/dashboard')}
+        onClick={() => router.push(returnTo)}
         className="flex items-center text-slate-500 hover:text-brand-600 transition-colors mb-8 font-medium"
       >
         <svg
@@ -136,7 +139,7 @@ export default function EditOrganizationPage({
             d="M10 19l-7-7m0 0l7-7m-7 7h18"
           />
         </svg>
-        Volver al Dashboard
+        Volver
       </button>
 
       <h1 className="text-3xl font-bold text-slate-900 mb-8">
@@ -198,11 +201,11 @@ export default function EditOrganizationPage({
               <img
                 src={image}
                 alt="Avatar preview"
-                className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border border-slate-200"
+                className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200"
               />
             )}
             {!image && (
-              <div className="w-16 h-16 rounded-xl bg-brand-100 flex items-center justify-center text-brand-600 text-2xl font-bold flex-shrink-0">
+              <div className="w-16 h-16 rounded-xl bg-brand-100 flex items-center justify-center text-brand-600 text-2xl font-bold shrink-0">
                 {name?.charAt(0)?.toUpperCase() || '?'}
               </div>
             )}
@@ -302,7 +305,7 @@ export default function EditOrganizationPage({
         <div className="flex gap-3 pt-2">
           <button
             type="button"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push(returnTo)}
             className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
           >
             Cancelar

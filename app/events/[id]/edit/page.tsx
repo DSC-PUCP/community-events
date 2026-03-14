@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, use, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { getEventById, updateEvent, uploadBanner } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
+import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import type { Event, Category } from '@/lib/types';
 
 function toDatetimeLocal(date: Date | null | undefined): string {
@@ -21,6 +22,7 @@ export default function EditEventPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -82,6 +84,8 @@ export default function EditEventPage({
 
   const canEdit =
     session?.user?.role === 'admin' || session?.user?.id === event?.orgId;
+  const returnTo = resolveReturnTo(searchParams.get('returnTo'), '/dashboard');
+  const backTo = resolveReturnTo(searchParams.get('backTo'), returnTo);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -123,7 +127,7 @@ export default function EditEventPage({
         categories: selectedCategories,
       });
 
-      router.push(`/events/${id}`);
+      router.replace(appendReturnTo(`/events/${id}`, returnTo));
     } catch (err) {
       setError((err as Error).message || 'Error al guardar los cambios.');
     } finally {
@@ -147,7 +151,7 @@ export default function EditEventPage({
             No tienes permisos para editar este evento.
           </p>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push(backTo)}
             className="text-brand-600 hover:underline"
           >
             Volver
@@ -160,7 +164,7 @@ export default function EditEventPage({
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <button
-        onClick={() => router.back()}
+        onClick={() => router.push(backTo)}
         className="flex items-center text-slate-500 hover:text-brand-600 transition-colors mb-8 font-medium"
       >
         <svg
@@ -385,7 +389,7 @@ export default function EditEventPage({
         <div className="flex gap-3 pt-2">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push(backTo)}
             className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
           >
             Cancelar
