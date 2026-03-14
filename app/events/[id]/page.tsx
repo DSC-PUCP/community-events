@@ -202,7 +202,7 @@ export default function EventDetailPage({
                 <h3 className="text-xl font-bold text-slate-800 mb-4">
                   Información
                 </h3>
-                <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap">
+                <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap wrap-break-word">
                   {event.description}
                 </p>
               </div>
