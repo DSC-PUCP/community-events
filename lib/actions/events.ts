@@ -1,12 +1,16 @@
 'use server';
 
 import { db, Event, events, NewEvent } from '@/lib/db';
-import { desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq, gte } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { saveImage } from '@/lib/upload';
 import sharp from 'sharp';
+import type { EventStats } from '@/lib/types';
+import { drizzle as drizzleBetterSqlite } from 'drizzle-orm/better-sqlite3';
+import * as schema from '@/lib/db/schema';
+import { drizzle as drizzleLibsql } from 'drizzle-orm/libsql';
 
 async function getSession() {
   return await auth.api.getSession({
@@ -16,6 +20,45 @@ async function getSession() {
 
 export async function getAllEvents(): Promise<Event[]> {
   return await db.select().from(events).orderBy(desc(events.startDate));
+}
+
+export async function getAllEventStats(params?: {
+  orgId?: string;
+  now?: Date;
+}): Promise<EventStats> {
+  const now = params?.now ?? new Date();
+  const orgFilter = params?.orgId ? eq(events.orgId, params.orgId) : undefined;
+
+  // FIXME: por algún motivo no hace el infer correctamente de .select() en el union
+  // de db y da error, solo por si acaso en una query he puesto el better sqlite type
+  // y en el otro el libsql type, para dejar comprobado que funciona con ambos
+
+  const [totalRow] = await (
+    db as ReturnType<typeof drizzleBetterSqlite<typeof schema>>
+  )
+    .select({ value: count() })
+    .from(events)
+    .where(orgFilter);
+
+  const upcomingFilter = orgFilter
+    ? and(orgFilter, gte(events.startDate, now))
+    : gte(events.startDate, now);
+
+  const [upcomingRow] = await (
+    db as ReturnType<typeof drizzleLibsql<typeof schema>>
+  )
+    .select({ value: count() })
+    .from(events)
+    .where(upcomingFilter);
+
+  const total = Number(totalRow?.value ?? 0);
+  const upcoming = Number(upcomingRow?.value ?? 0);
+
+  return {
+    total,
+    upcoming,
+    past: Math.max(total - upcoming, 0),
+  };
 }
 
 export async function getEventById(id: string): Promise<Event | null> {
