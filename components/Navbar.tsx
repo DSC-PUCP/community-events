@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from '@/lib/auth-client';
+import { signOut, useSession } from '@/lib/auth-client';
 
 export default function Navbar() {
   const router = useRouter();
@@ -51,11 +51,13 @@ export default function Navbar() {
               <div className="flex items-center gap-4">
                 <Link
                   href="/dashboard"
-                  className="text-slate-600 hover:text-brand-600 font-medium px-4 py-2"
-                ></Link>
+                  className="text-brand-700 bg-brand-50 border border-brand-100 rounded-lg text-sm font-medium px-4 py-2 hover:bg-brand-100 hover:text-brand-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                >
+                  Dashboard
+                </Link>
                 <button
                   onClick={handleLogout}
-                  className="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium"
+                  className="text-slate-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
                 >
                   Cerrar Sesión
                 </button>
