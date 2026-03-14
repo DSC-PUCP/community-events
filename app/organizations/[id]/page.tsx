@@ -119,7 +119,7 @@ export default function OrgProfilePage({
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Acerca de
               </h3>
-              <p className="text-slate-600 leading-relaxed">
+              <p className="text-slate-600 leading-relaxed whitespace-pre-line break-words">
                 {org.description}
               </p>
             </div>
