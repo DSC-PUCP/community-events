@@ -38,13 +38,20 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   // Read all filters directly from URL
+  const selectedCats = useMemo(
+    () =>
+      searchParams.get('cats')?.split(',').map(Number).filter(Boolean) || [],
+    [searchParams],
+  );
+
+  const dateRange = useMemo(
+    () => ({
+      start: searchParams.get('dateStart') || '',
+      end: searchParams.get('dateEnd') || '',
+    }),
+    [searchParams],
+  );
   const search = searchParams.get('q') || '';
-  const selectedCats =
-    searchParams.get('cats')?.split(',').map(Number).filter(Boolean) || [];
-  const dateRange = {
-    start: searchParams.get('dateStart') || '',
-    end: searchParams.get('dateEnd') || '',
-  };
   const selectedOrg = searchParams.get('org') || null;
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const sortBy = (searchParams.get('sort') || 'date-desc') as SortOption;
