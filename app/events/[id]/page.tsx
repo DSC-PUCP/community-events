@@ -451,7 +451,7 @@ export default function EventDetailPage({
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
                     Sobre la organización
                   </h4>
-                  <p className="text-slate-600 leading-relaxed italic">
+                  <p className="text-slate-600 leading-relaxed italic whitespace-pre-line break-words">
                     {org.description
                       || 'La organización aún no ha proporcionado una descripción.'}
                   </p>
