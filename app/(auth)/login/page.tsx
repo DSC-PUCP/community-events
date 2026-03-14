@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, signIn } from '@/lib/auth-client';
+import { signIn, useSession } from '@/lib/auth-client';
 
 export default function Page() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function Page() {
 
       if (result.error) {
         console.error(result.error);
-        setError(result.error.message || 'Invalid credentials');
+        setError(result.error.message || 'Credenciales inválidas');
       } else {
         if (!session?.user) {
           router.push('/login');
@@ -40,7 +40,7 @@ export default function Page() {
         }
       }
     } catch {
-      setError('An error occurred. Please try again.');
+      setError('Ha ocurrido un error. Por favor, inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function Page() {
             </label>
             <input
               type="email"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="org@pucp.edu.pe"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -79,7 +79,7 @@ export default function Page() {
             </label>
             <input
               type="password"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -89,7 +89,7 @@ export default function Page() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 disabled:opacity-50"
+            className="w-full bg-brand-600 text-white py-4 rounded-2xl font-bold hover:bg-brand-700 transition-colors shadow-lg shadow-brand-100 disabled:opacity-50"
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
