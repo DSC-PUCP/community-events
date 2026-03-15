@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { createEvent, uploadBanner } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
@@ -12,7 +12,7 @@ function NewEventPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-   const fileInputRef = useRef<HTMLInputElement>(null); 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,10 +44,25 @@ function NewEventPageContent() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setBannerFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (!file) return;
+    setError('');
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (file && !allowedTypes.includes(file.type)) {
+      setError(
+        'Tipo de archivo no permitido. Solo se aceptan JPEG, PNG y WEBP.',
+      );
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen es demasiado grande. El tamaño máximo es 5MB.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setBannerFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const toggleCategory = (id: number) => {
@@ -136,11 +151,11 @@ function NewEventPageContent() {
         Crear Nuevo Evento
       </h1>
 
-      {error && (
+      {/*error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
           {error}
         </div>
-      )}
+      )*/}
 
       <form
         onSubmit={handleSubmit}
@@ -188,27 +203,38 @@ function NewEventPageContent() {
             onChange={handleFileChange}
             className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
           />
-            <div className="flex items-center gap-3">
-              {bannerFile && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBannerFile(null);
-                    setPreviewUrl(bannerUrl);
-                    if (fileInputRef.current) fileInputRef.current.value = '';
-                  }}
-                  className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
-                  title="Quitar archivo"
+          <div className="flex items-center gap-3">
+            {bannerFile && (
+              <button
+                type="button"
+                onClick={() => {
+                  setBannerFile(null);
+                  setPreviewUrl(bannerUrl);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
+                title="Quitar archivo"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           <p className="text-xs text-slate-400 mt-1">O proporciona una URL:</p>
           <input
-            type="url"
+            type="text"
             value={bannerUrl}
             onChange={(e) => {
               setBannerUrl(e.target.value);
