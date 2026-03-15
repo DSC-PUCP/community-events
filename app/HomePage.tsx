@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import EventCard from '@/components/EventCard';
 import { getAllEvents } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
-import type { Event, Category } from '@/lib/types';
+import type { Category, Event } from '@/lib/types';
 import { getOrganizationsForFilter } from '@/lib/actions/organizations';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
-  getToday,
-  getThisWeek,
-  getThisMonth,
-  futureDateString,
   areDateRangesEqual,
+  futureDateString,
+  getThisMonth,
+  getThisWeek,
+  getToday,
 } from '@/lib/utils/date-helpers';
 import { appendReturnTo, buildReturnTo } from '@/lib/utils/navigation';
 
@@ -194,7 +194,7 @@ export default function HomePage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
           Descubre <span className="text-indigo-600">eventos comunitarios</span>{' '}
-          en nuestro campus
+          en la PUCP
         </h1>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
           Desde charlas hasta concursos, descubre los mejores eventos y
