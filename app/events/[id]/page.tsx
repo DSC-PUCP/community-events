@@ -89,6 +89,8 @@ export default function EventDetailPage({
   );
   const startDate = new Date(event.startDate);
   const endDate = new Date(event.endDate);
+  const bannerSrc =
+    typeof event.banner === 'string' ? event.banner.trim() : null;
 
   const canManage =
     session?.user?.role === 'admin' || session?.user?.id === event?.orgId;
@@ -178,13 +180,19 @@ export default function EventDetailPage({
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
         <div className="relative h-96">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={event.banner}
-            className="w-full h-full object-cover"
-            alt={event.title}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent" />
+          {bannerSrc ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={bannerSrc}
+                className="w-full h-full object-cover"
+                alt={event.title}
+              />
+            </>
+          ) : (
+            <div className="w-full h-full bg-linear-to-br from-brand-600 to-slate-300" />
+          )}
+          <div className="absolute inset-0 bg-linear-to-t from-slate-900/80 to-transparent" />
           <div className="absolute bottom-8 left-8 right-8">
             <div className="flex gap-2 mb-4">
               {eventCategories.map((c) => (
