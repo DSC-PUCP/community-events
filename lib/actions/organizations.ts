@@ -6,6 +6,12 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { APIError } from 'better-auth';
+import type { Contact } from '@/lib/types';
+import {
+  validateOrganization,
+  validateOrganizationEmail,
+  validateOrganizationLink,
+} from '@/lib/validation/organization';
 
 type ChangePasswordResult =
   | { success: true }
@@ -63,10 +69,48 @@ export async function updateOrganization(
     throw new Error('Unauthorized');
   }
 
+  const parsedValidation = validateOrganization({
+    name: data.name ?? '',
+    description: data.description ?? '',
+  });
+
+  if (!parsedValidation.success) {
+    throw new Error(parsedValidation.formError ?? 'Datos invalidos.');
+  }
+
+  const contacts = Array.isArray(data.contacts)
+    ? (data.contacts as Contact[])
+    : [];
+
+  for (const contact of contacts) {
+    if (contact.value.trim().length === 0) {
+      continue;
+    }
+
+    if (contact.type === 'email') {
+      const parsedContactEmail = validateOrganizationEmail(contact.value);
+
+      if (!parsedContactEmail.success) {
+        throw new Error(parsedContactEmail.formError);
+      }
+      continue;
+    }
+
+    if (contact.type === 'link') {
+      const parsedContactLink = validateOrganizationLink(contact.value);
+
+      if (!parsedContactLink.success) {
+        throw new Error(parsedContactLink.formError);
+      }
+    }
+  }
+
   await db
     .update(organizations)
     .set({
       ...data,
+      name: parsedValidation.data.name,
+      description: parsedValidation.data.description,
       updatedAt: new Date(),
     })
     .where(eq(organizations.id, id));
