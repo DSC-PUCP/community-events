@@ -15,6 +15,7 @@ import {
   validateOrganizationLink,
 } from '@/lib/validation/organization';
 import type { Contact, Organization } from '@/lib/types';
+import Select from '@/components/Select';
 
 export default function EditOrganizationPage({
   params,
@@ -342,15 +343,16 @@ export default function EditOrganizationPage({
             {contacts.map((contact, idx) => (
               <div key={idx} className="space-y-1">
                 <div className="flex gap-2 items-center">
-                  <select
+                  <Select
                     value={contact.type}
-                    onChange={(e) => updateContact(idx, 'type', e.target.value)}
-                    className="px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-slate-700 bg-white"
-                  >
-                    <option value="email">Email</option>
-                    <option value="whatsapp">WhatsApp</option>
-                    <option value="link">Link</option>
-                  </select>
+                    onChange={(val) => updateContact(idx, 'type', val)}
+                    options={[
+                      { value: 'email', label: 'Email' },
+                      { value: 'whatsapp', label: 'WhatsApp' },
+                      { value: 'link', label: 'Link' },
+                    ]}
+                    className="py-2.5! font-semibold"
+                  />
                   <input
                     type={contact.type === 'email' ? 'email' : 'text'}
                     value={contact.value}

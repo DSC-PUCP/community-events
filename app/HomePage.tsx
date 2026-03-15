@@ -15,6 +15,7 @@ import {
   getToday,
 } from '@/lib/utils/date-helpers';
 import { appendReturnTo, buildReturnTo } from '@/lib/utils/navigation';
+import Select from '@/components/Select';
 
 const PAGE_SIZE = 8;
 
@@ -323,31 +324,32 @@ export default function HomePage() {
           {/* Separador vertical */}
           <div className="hidden md:block h-8 w-px bg-slate-200"></div>
 
-          <select
+          <Select
             value={selectedOrg ?? ''}
-            onChange={(e) => updateFilters({ org: e.target.value || null })}
-            className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-          >
-            <option value="">Todas las organizaciones</option>
-            {organizations.map((org) => (
-              <option key={org.id} value={org.id}>
-                {org.name}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => updateFilters({ org: val || null })}
+            fixedWidth
+            options={[
+              { value: '', label: 'Todas las organizaciones' },
+              ...organizations.map((org) => ({
+                value: org.id,
+                label: org.name,
+              })),
+            ]}
+          />
 
-          <select
+          <Select
             value={sortBy}
-            onChange={(e) => updateFilters({ sort: e.target.value })}
-            className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-          >
-            <option value="date-desc">Más recientes</option>
-            <option value="date-asc">Más antiguos</option>
-            <option value="created-desc">Recién añadidos</option>
-            <option value="created-asc">Añadidos antes</option>
-            <option value="title-asc">A → Z</option>
-            <option value="title-desc">Z → A</option>
-          </select>
+            onChange={(val) => updateFilters({ sort: val })}
+            fixedWidth
+            options={[
+              { value: 'date-desc', label: 'Más recientes' },
+              { value: 'date-asc', label: 'Más antiguos' },
+              { value: 'created-desc', label: 'Recién añadidos' },
+              { value: 'created-asc', label: 'Añadidos antes' },
+              { value: 'title-asc', label: 'A → Z' },
+              { value: 'title-desc', label: 'Z → A' },
+            ]}
+          />
 
           {/* Spacer para empujar el botón a la derecha en desktop */}
           <div className="flex-1 hidden lg:block"></div>
