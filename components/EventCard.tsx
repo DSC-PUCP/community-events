@@ -21,6 +21,8 @@ const EventCard: React.FC<EventCardProps> = ({
     hour: '2-digit',
     minute: '2-digit',
   });
+  const bannerSrc =
+    typeof event.banner === 'string' ? event.banner.trim() : null;
 
   return (
     <div
@@ -28,12 +30,16 @@ const EventCard: React.FC<EventCardProps> = ({
       className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all cursor-pointer group"
     >
       <div className="relative h-48 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={event.banner}
-          alt={event.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        {bannerSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={bannerSrc}
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-brand-600 to-slate-300" />
+        )}
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
           {eventCategories.map((cat) => (
             <span
