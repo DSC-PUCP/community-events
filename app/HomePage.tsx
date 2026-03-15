@@ -6,7 +6,7 @@ import { getAllEvents } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
 import type { Category, Event } from '@/lib/types';
 import { getOrganizationsForFilter } from '@/lib/actions/organizations';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   areDateRangesEqual,
   futureDateString,
@@ -27,11 +27,42 @@ type SortOption =
   | 'title-asc'
   | 'title-desc';
 
-export default function HomePage() {
-  const searchParams = useSearchParams();
+type HomePageProps = {
+  searchParams?: Record<string, string | string[] | undefined>;
+};
+
+function getSingleSearchParam(
+  value: string | string[] | undefined,
+): string | null {
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+
+  return value ?? null;
+}
+
+export default function HomePage({ searchParams }: HomePageProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const returnTo = buildReturnTo(pathname, searchParams);
+
+  const urlSearchParams = useMemo(() => {
+    const params = new URLSearchParams();
+
+    Object.entries(searchParams ?? {}).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((item) => params.append(key, item));
+        return;
+      }
+
+      if (typeof value === 'string') {
+        params.set(key, value);
+      }
+    });
+
+    return params;
+  }, [searchParams]);
+
+  const returnTo = buildReturnTo(pathname, urlSearchParams);
 
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -43,21 +74,28 @@ export default function HomePage() {
   // Read all filters directly from URL
   const selectedCats = useMemo(
     () =>
-      searchParams.get('cats')?.split(',').map(Number).filter(Boolean) || [],
+      getSingleSearchParam(searchParams?.cats)
+        ?.split(',')
+        .map(Number)
+        .filter(Boolean) || [],
     [searchParams],
   );
 
   const dateRange = useMemo(
     () => ({
-      start: searchParams.get('dateStart') || '',
-      end: searchParams.get('dateEnd') || '',
+      start: getSingleSearchParam(searchParams?.dateStart) || '',
+      end: getSingleSearchParam(searchParams?.dateEnd) || '',
     }),
     [searchParams],
   );
-  const search = searchParams.get('q') || '';
-  const selectedOrg = searchParams.get('org') || null;
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const sortBy = (searchParams.get('sort') || 'date-desc') as SortOption;
+  const search = getSingleSearchParam(searchParams?.q) || '';
+  const selectedOrg = getSingleSearchParam(searchParams?.org) || null;
+  const currentPage = parseInt(
+    getSingleSearchParam(searchParams?.page) || '1',
+    10,
+  );
+  const sortBy = (getSingleSearchParam(searchParams?.sort)
+    || 'date-desc') as SortOption;
 
   const hasActiveFilters =
     search.trim() !== ''
@@ -91,7 +129,7 @@ export default function HomePage() {
 
   // Single function to update URL params
   const updateFilters = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(urlSearchParams.toString());
 
     Object.entries(updates).forEach(([key, value]) => {
       if (value === null || value === '') {
@@ -181,14 +219,6 @@ export default function HomePage() {
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-slate-500">Cargando eventos...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -399,7 +429,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      {sortedEvents.length > 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center min-h-96 rounded-3xl border border-dashed border-slate-300 bg-white">
+          <div className="text-slate-500">Cargando eventos...</div>
+        </div>
+      ) : sortedEvents.length > 0 ? (
         <>
           <p className="text-sm text-slate-500 mb-4">
             {sortedEvents.length} evento
