@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import {
@@ -8,9 +8,13 @@ import {
   updateOrganization,
 } from '@/lib/actions/organizations';
 import { resolveReturnTo } from '@/lib/utils/navigation';
-import type { Organization } from '@/lib/types';
-
-type Contact = { type: 'email' | 'whatsapp' | 'link'; value: string };
+import {
+  ORGANIZATION_LIMITS,
+  validateOrganization,
+  validateOrganizationEmail,
+  validateOrganizationLink,
+} from '@/lib/validation/organization';
+import type { Contact, Organization } from '@/lib/types';
 
 export default function EditOrganizationPage({
   params,
@@ -34,6 +38,34 @@ export default function EditOrganizationPage({
   const [image, setImage] = useState('');
   const [contacts, setContacts] = useState<Contact[]>([]);
   const returnTo = resolveReturnTo(searchParams.get('returnTo'), '/dashboard');
+  const organizationValidation = validateOrganization({
+    name,
+    description,
+  });
+  const nameError = organizationValidation.success
+    ? null
+    : (organizationValidation.fieldErrors.name ?? null);
+  const descriptionError = organizationValidation.success
+    ? null
+    : (organizationValidation.fieldErrors.description ?? null);
+  const visibleNameError = name.trim().length === 0 ? null : nameError;
+  const contactErrors = contacts.map((contact) => {
+    if (contact.value.trim().length === 0) {
+      return null;
+    }
+
+    if (contact.type === 'email') {
+      const parsedContactEmail = validateOrganizationEmail(contact.value);
+      return parsedContactEmail.success ? null : parsedContactEmail.formError;
+    }
+
+    if (contact.type === 'link') {
+      const parsedContactLink = validateOrganizationLink(contact.value);
+      return parsedContactLink.success ? null : parsedContactLink.formError;
+    }
+
+    return null;
+  });
 
   useEffect(() => {
     getOrganizationById(id)
@@ -77,6 +109,21 @@ export default function EditOrganizationPage({
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    if (!organizationValidation.success) {
+      setError(organizationValidation.formError);
+      return;
+    }
+
+    const firstInvalidContact = contactErrors.find(
+      (contactError) => contactError !== null,
+    );
+
+    if (firstInvalidContact) {
+      setError(firstInvalidContact);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -171,9 +218,28 @@ export default function EditOrganizationPage({
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
+            maxLength={ORGANIZATION_LIMITS.name.max}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
             placeholder="Nombre de tu organización"
           />
+          <div className="mt-2 flex items-center justify-between text-xs">
+            <span
+              className={visibleNameError ? 'text-red-600' : 'text-slate-400'}
+            >
+              {visibleNameError
+                ? visibleNameError
+                : `Maximo ${ORGANIZATION_LIMITS.name.max} caracteres.`}
+            </span>
+            <span
+              className={
+                visibleNameError
+                  ? 'font-semibold text-red-600'
+                  : 'text-slate-500'
+              }
+            >
+              {name.length}/{ORGANIZATION_LIMITS.name.max}
+            </span>
+          </div>
         </div>
 
         {/* Descripción */}
@@ -185,9 +251,28 @@ export default function EditOrganizationPage({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
+            maxLength={ORGANIZATION_LIMITS.description.max}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             placeholder="Cuéntanos sobre tu organización..."
           />
+          <div className="mt-2 flex items-center justify-between text-xs">
+            <span
+              className={descriptionError ? 'text-red-600' : 'text-slate-400'}
+            >
+              {descriptionError
+                ? descriptionError
+                : `Maximo ${ORGANIZATION_LIMITS.description.max} caracteres.`}
+            </span>
+            <span
+              className={
+                descriptionError
+                  ? 'font-semibold text-red-600'
+                  : 'text-slate-500'
+              }
+            >
+              {description.length}/{ORGANIZATION_LIMITS.description.max}
+            </span>
+          </div>
         </div>
 
         {/* Avatar / Imagen */}
@@ -255,48 +340,57 @@ export default function EditOrganizationPage({
 
           <div className="space-y-3">
             {contacts.map((contact, idx) => (
-              <div key={idx} className="flex gap-2 items-center">
-                <select
-                  value={contact.type}
-                  onChange={(e) => updateContact(idx, 'type', e.target.value)}
-                  className="px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-slate-700 bg-white"
-                >
-                  <option value="email">Email</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="link">Link</option>
-                </select>
-                <input
-                  type="text"
-                  value={contact.value}
-                  onChange={(e) => updateContact(idx, 'value', e.target.value)}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm"
-                  placeholder={
-                    contact.type === 'email'
-                      ? 'org@pucp.edu.pe'
-                      : contact.type === 'whatsapp'
-                        ? '+51 999 999 999'
-                        : 'https://...'
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => removeContact(idx)}
-                  className="p-2 text-slate-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              <div key={idx} className="space-y-1">
+                <div className="flex gap-2 items-center">
+                  <select
+                    value={contact.type}
+                    onChange={(e) => updateContact(idx, 'type', e.target.value)}
+                    className="px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500 text-sm font-semibold text-slate-700 bg-white"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                    <option value="email">Email</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="link">Link</option>
+                  </select>
+                  <input
+                    type={contact.type === 'email' ? 'email' : 'text'}
+                    value={contact.value}
+                    onChange={(e) =>
+                      updateContact(idx, 'value', e.target.value)
+                    }
+                    className={`flex-1 px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-brand-500 text-sm ${contactErrors[idx] ? 'border-red-300' : 'border-slate-200'}`}
+                    placeholder={
+                      contact.type === 'email'
+                        ? 'org@pucp.edu.pe'
+                        : contact.type === 'whatsapp'
+                          ? '+51 999 999 999'
+                          : 'https://...'
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeContact(idx)}
+                    className="p-2 text-slate-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                {contactErrors[idx] && (
+                  <p className="text-xs text-red-600 pl-[132px]">
+                    {contactErrors[idx]}
+                  </p>
+                )}
               </div>
             ))}
           </div>

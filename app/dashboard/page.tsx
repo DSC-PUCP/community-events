@@ -13,6 +13,7 @@ import {
   deleteOrganization,
   getAllOrganizations,
 } from '@/lib/actions/organizations';
+import { validateOrganizationEmail } from '@/lib/validation/organization';
 import { appendReturnTo } from '@/lib/utils/navigation';
 import Link from 'next/link';
 import type { Event, EventStats, Organization } from '@/lib/types';
@@ -83,13 +84,25 @@ export default function DashboardPage() {
   const now = new Date();
   const upcomingEvents = events.filter((e) => new Date(e.startDate) >= now);
   const pastEvents = events.filter((e) => new Date(e.startDate) < now);
+  const createOrgEmailValidation = validateOrganizationEmail(newOrgEmail);
+  const createOrgEmailError = createOrgEmailValidation.success
+    ? null
+    : (createOrgEmailValidation.formError ?? null);
+  const visibleCreateOrgEmailError =
+    newOrgEmail.trim().length === 0 ? null : createOrgEmailError;
 
   const handleCreateOrg = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateOrgError('');
+
+    if (!createOrgEmailValidation.success) {
+      setCreateOrgError(createOrgEmailValidation.formError);
+      return;
+    }
+
     setCreateOrgLoading(true);
     try {
-      const result = await createOrganization(newOrgEmail);
+      const result = await createOrganization(createOrgEmailValidation.data);
       setTempPassword(result.tempPassword ?? '');
       setNewOrgEmail('');
       const orgsData = await getAllOrganizations();
@@ -576,10 +589,18 @@ export default function DashboardPage() {
                     type="email"
                     required
                     value={newOrgEmail}
-                    onChange={(e) => setNewOrgEmail(e.target.value)}
+                    onChange={(e) => {
+                      setNewOrgEmail(e.target.value);
+                      setCreateOrgError('');
+                    }}
                     placeholder="org@pucp.edu.pe"
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none"
                   />
+                  {visibleCreateOrgEmailError && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {visibleCreateOrgEmailError}
+                    </p>
+                  )}
                   <p className="text-xs text-slate-500 mt-1">
                     Se generará una contraseña temporal automáticamente.
                   </p>
