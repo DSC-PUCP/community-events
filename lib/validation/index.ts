@@ -1,17 +1,19 @@
 import type { output, z } from 'zod';
 
+type FieldErrors<Data> = Data extends object
+  ? Partial<Record<keyof Data & string, string>>
+  : Record<string, string>;
+
 type ValidationResult<Data> =
   | { success: true; data: Data }
   | {
       success: false;
-      fieldErrors: Partial<Record<keyof Data, string>>;
+      fieldErrors: FieldErrors<Data>;
       formError: string;
     };
 
-function mapZodFieldErrors<Field extends string | number | symbol>(
-  error: z.ZodError,
-): Partial<Record<Field, string>> {
-  const mappedErrors: Partial<Record<Field, string>> = {};
+function mapZodFieldErrors(error: z.ZodError): Record<string, string> {
+  const mappedErrors: Record<string, string> = {};
 
   for (const issue of error.issues) {
     const fieldPath = issue.path[0];
@@ -19,16 +21,15 @@ function mapZodFieldErrors<Field extends string | number | symbol>(
       continue;
     }
 
-    const key = fieldPath as Field;
-    if (!mappedErrors[key]) {
-      mappedErrors[key] = issue.message;
+    if (!mappedErrors[fieldPath]) {
+      mappedErrors[fieldPath] = issue.message;
     }
   }
 
   return mappedErrors;
 }
 
-export function parseWithSchema<const Schema extends z.ZodObject>(
+export function parseWithSchema<const Schema extends z.ZodSchema>(
   schema: Schema,
   input: unknown,
 ): ValidationResult<z.output<Schema>> {
@@ -38,7 +39,9 @@ export function parseWithSchema<const Schema extends z.ZodObject>(
     return { success: true, data: parsed.data };
   }
 
-  const fieldErrors = mapZodFieldErrors<keyof output<Schema>>(parsed.error);
+  const fieldErrors = mapZodFieldErrors(parsed.error) as FieldErrors<
+    output<Schema>
+  >;
   const formError = parsed.error.issues[0]?.message ?? 'Datos inválidos.';
 
   return {
