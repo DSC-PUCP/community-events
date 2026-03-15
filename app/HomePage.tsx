@@ -231,6 +231,27 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* FILA 2: Categorías */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-sm font-medium text-slate-600 self-center mr-2">
+            Categorías:
+          </span>
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => toggleCategory(cat.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                selectedCats.includes(cat.id)
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+
+        {/* FILA 3: Fechas predeterminadas */}
         <div className="flex flex-wrap gap-2">
           <span className="text-sm font-medium text-slate-600 self-center mr-2">
             Fecha:
@@ -376,22 +397,6 @@ export default function HomePage() {
             </button>
           )}
         </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-8">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => toggleCategory(cat.id)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-              selectedCats.includes(cat.id)
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-400'
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
       </div>
 
       {sortedEvents.length > 0 ? (
