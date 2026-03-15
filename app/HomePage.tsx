@@ -58,6 +58,14 @@ export default function HomePage() {
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const sortBy = (searchParams.get('sort') || 'date-desc') as SortOption;
 
+  const hasActiveFilters =
+    search.trim() !== ''
+    || selectedCats.length > 0
+    || Boolean(dateRange.start)
+    || Boolean(dateRange.end)
+    || selectedOrg !== null
+    || sortBy !== 'date-desc';
+
   // Load initial data only once
   useEffect(() => {
     async function loadData() {
@@ -344,25 +352,27 @@ export default function HomePage() {
           {/* Spacer para empujar el botón a la derecha en desktop */}
           <div className="flex-1 hidden lg:block"></div>
 
-          <button
-            onClick={() => router.replace(pathname)}
-            className="px-4 py-2 rounded-xl border-2 border-slate-300 text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-2"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {hasActiveFilters && (
+            <button
+              onClick={() => router.replace(pathname)}
+              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all flex items-center gap-1.5"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-            Limpiar filtros
-          </button>
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Limpiar filtros
+            </button>
+          )}
         </div>
       </div>
 
