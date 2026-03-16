@@ -14,6 +14,7 @@ import {
   validateWhatsappContact,
   WHATSAPP_CONSTRAINTS,
 } from '@/lib/validation/whatsapp';
+import { validateEventDateRange } from '@/lib/validation/event';
 
 function toDatetimeLocal(date: Date | null | undefined): string {
   if (!date) return '';
@@ -55,6 +56,8 @@ export default function EditEventPage({
   const whatsappError = validateWhatsappContact(whatsappContact);
   const visibleWhatsappError =
     whatsappContact.length === 0 ? null : whatsappError;
+  const visibleDateError =
+    startDate && endDate ? validateEventDateRange(startDate, endDate) : null;
 
   useEffect(() => {
     async function load() {
@@ -126,6 +129,12 @@ export default function EditEventPage({
 
     if (whatsappError) {
       setFormError(whatsappError);
+      return;
+    }
+
+    const dateRangeError = validateEventDateRange(startDate, endDate);
+    if (dateRangeError) {
+      setFormError(dateRangeError);
       return;
     }
 
@@ -338,7 +347,14 @@ export default function EditEventPage({
               type="datetime-local"
               required
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                const nextStartDate = e.target.value;
+                setStartDate(nextStartDate);
+
+                if (endDate && nextStartDate && endDate < nextStartDate) {
+                  setEndDate('');
+                }
+              }}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
@@ -351,10 +367,15 @@ export default function EditEventPage({
               required
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
+              min={startDate || undefined}
+              disabled={!startDate}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
+        {visibleDateError && (
+          <p className="-mt-2 text-sm text-red-600">{visibleDateError}</p>
+        )}
 
         {/* Categorías */}
         {categories.length > 0 && (

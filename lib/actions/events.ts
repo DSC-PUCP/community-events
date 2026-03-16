@@ -15,6 +15,7 @@ import {
   normalizeWhatsappContact,
   validateWhatsappContact,
 } from '@/lib/validation/whatsapp';
+import { validateEventDateRange } from '@/lib/validation/event';
 
 async function getSession() {
   return await auth.api.getSession({
@@ -109,6 +110,11 @@ export async function createEvent(
   const resolvedOrgId =
     session.user.role === 'admin' ? session.user.id : data.orgId;
 
+  const dateRangeError = validateEventDateRange(data.startDate, data.endDate);
+  if (dateRangeError) {
+    throw new Error(dateRangeError);
+  }
+
   const newEvent: NewEvent = {
     ...data,
     whatsappContact: normalizeOptionalWhatsappContact(data.whatsappContact),
@@ -141,6 +147,14 @@ export async function updateEvent(id: string, data: Partial<Event>) {
 
   if (session.user.role !== 'admin' && event.orgId !== session.user.id) {
     throw new Error('Unauthorized');
+  }
+
+  const dateRangeError = validateEventDateRange(
+    data.startDate ?? event.startDate,
+    data.endDate ?? event.endDate,
+  );
+  if (dateRangeError) {
+    throw new Error(dateRangeError);
   }
 
   const normalizedWhatsappContact =
