@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, use, useRef } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { getEventById, updateEvent, uploadBanner } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
 import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
-import type { Event, Category } from '@/lib/types';
+import type { Category, Event } from '@/lib/types';
+import { validateImage } from '@/lib/validation/image';
 
 function toDatetimeLocal(date: Date | null | undefined): string {
   if (!date) return '';
@@ -91,17 +92,10 @@ export default function EditEventPage({
     const file = e.target.files?.[0];
     if (!file) return;
     setError('');
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (file && !allowedTypes.includes(file.type)) {
-      setError(
-        'Tipo de archivo no permitido. Solo se aceptan JPEG, PNG y WEBP.',
-      );
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError('La imagen es demasiado grande. El tamaño máximo es 5MB.');
+    const error = validateImage(file);
+    if (error) {
+      setError(error);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }

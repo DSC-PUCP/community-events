@@ -7,6 +7,7 @@ import { createEvent, uploadBanner } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
 import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import type { Category } from '@/lib/types';
+import { validateImage } from '@/lib/validation/image';
 
 function NewEventPageContent() {
   const router = useRouter();
@@ -46,17 +47,10 @@ function NewEventPageContent() {
     const file = e.target.files?.[0];
     if (!file) return;
     setError('');
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (file && !allowedTypes.includes(file.type)) {
-      setError(
-        'Tipo de archivo no permitido. Solo se aceptan JPEG, PNG y WEBP.',
-      );
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError('La imagen es demasiado grande. El tamaño máximo es 5MB.');
+    const error = validateImage(file);
+    if (error) {
+      setError(error);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
