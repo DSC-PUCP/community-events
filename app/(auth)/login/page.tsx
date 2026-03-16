@@ -25,7 +25,6 @@ export default function Page() {
       });
 
       if (result.error) {
-        console.error(result.error);
         setError(result.error.message || 'Credenciales inválidas');
       } else {
         if (!session?.user) {
