@@ -93,6 +93,19 @@ export default function Page() {
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
         </form>
+
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-center text-sm text-slate-700">
+          Tienes una organización estudiantil de la PUCP y quieres usar la
+          plataforma?{' '}
+          <a
+            href="https://dsc.inf.pucp.edu.pe/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-emerald-600 underline underline-offset-2"
+          >
+            ¡Contáctanos!
+          </a>
+        </div>
       </div>
     </div>
   );
