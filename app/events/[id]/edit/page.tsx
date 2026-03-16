@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, use, useRef } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 import { getEventById, updateEvent, uploadBanner } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
 import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
-import type { Event, Category } from '@/lib/types';
+import type { Category, Event } from '@/lib/types';
+import { validateImage } from '@/lib/validation/image';
 
 function toDatetimeLocal(date: Date | null | undefined): string {
   if (!date) return '';
@@ -89,10 +90,18 @@ export default function EditEventPage({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setBannerFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (!file) return;
+    setError('');
+
+    const error = validateImage(file);
+    if (error) {
+      setError(error);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
     }
+
+    setBannerFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const toggleCategory = (id: number) => {
@@ -185,11 +194,11 @@ export default function EditEventPage({
 
       <h1 className="text-3xl font-bold text-slate-900 mb-8">Editar Evento</h1>
 
-      {error && (
+      {/*error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
           {error}
         </div>
-      )}
+      )*/}
 
       <form
         onSubmit={handleSubmit}
@@ -271,11 +280,12 @@ export default function EditEventPage({
               </button>
             )}
           </div>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           <p className="text-xs text-slate-400 mt-1">
             O actualiza la URL directamente:
           </p>
           <input
-            type="url"
+            type="text"
             value={bannerUrl}
             onChange={(e) => {
               setBannerUrl(e.target.value);

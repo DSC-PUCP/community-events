@@ -7,6 +7,7 @@ import { createEvent, uploadBanner } from '@/lib/actions/events';
 import { getAllCategories } from '@/lib/actions/categories';
 import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import type { Category } from '@/lib/types';
+import { validateImage } from '@/lib/validation/image';
 
 function NewEventPageContent() {
   const router = useRouter();
@@ -44,10 +45,18 @@ function NewEventPageContent() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setBannerFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (!file) return;
+    setError('');
+
+    const error = validateImage(file);
+    if (error) {
+      setError(error);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
     }
+
+    setBannerFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const toggleCategory = (id: number) => {
@@ -136,11 +145,11 @@ function NewEventPageContent() {
         Crear Nuevo Evento
       </h1>
 
-      {error && (
+      {/*error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
           {error}
         </div>
-      )}
+      )*/}
 
       <form
         onSubmit={handleSubmit}
@@ -216,9 +225,10 @@ function NewEventPageContent() {
               </button>
             )}
           </div>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           <p className="text-xs text-slate-400 mt-1">O proporciona una URL:</p>
           <input
-            type="url"
+            type="text"
             value={bannerUrl}
             onChange={(e) => {
               setBannerUrl(e.target.value);
