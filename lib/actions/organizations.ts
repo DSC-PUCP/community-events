@@ -12,6 +12,10 @@ import {
   validateOrganizationEmail,
   validateOrganizationLink,
 } from '@/lib/validation/organization';
+import {
+  normalizeWhatsappContact,
+  validateWhatsappContact,
+} from '@/lib/validation/whatsapp';
 
 type ChangePasswordResult =
   | { success: true }
@@ -82,9 +86,12 @@ export async function updateOrganization(
     ? (data.contacts as Contact[])
     : [];
 
-  for (const contact of contacts) {
+  const normalizedContacts = contacts.map((contact) => {
     if (contact.value.trim().length === 0) {
-      continue;
+      return {
+        ...contact,
+        value: '',
+      };
     }
 
     if (contact.type === 'email') {
@@ -93,7 +100,11 @@ export async function updateOrganization(
       if (!parsedContactEmail.success) {
         throw new Error(parsedContactEmail.formError);
       }
-      continue;
+
+      return {
+        ...contact,
+        value: parsedContactEmail.data,
+      };
     }
 
     if (contact.type === 'link') {
@@ -102,13 +113,34 @@ export async function updateOrganization(
       if (!parsedContactLink.success) {
         throw new Error(parsedContactLink.formError);
       }
+
+      return {
+        ...contact,
+        value: parsedContactLink.data,
+      };
     }
-  }
+
+    if (contact.type === 'whatsapp') {
+      const whatsappError = validateWhatsappContact(contact.value);
+
+      if (whatsappError) {
+        throw new Error(whatsappError);
+      }
+
+      return {
+        ...contact,
+        value: normalizeWhatsappContact(contact.value) ?? '',
+      };
+    }
+
+    return contact;
+  });
 
   await db
     .update(organizations)
     .set({
       ...data,
+      contacts: normalizedContacts,
       name: parsedValidation.data.name,
       description: parsedValidation.data.description,
       updatedAt: new Date(),

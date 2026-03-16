@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { use, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getOrganizationById } from '@/lib/actions/organizations';
@@ -11,7 +11,8 @@ import {
   buildReturnTo,
   resolveReturnTo,
 } from '@/lib/utils/navigation';
-import type { Organization, Event, Category } from '@/lib/types';
+import type { Category, Event, Organization } from '@/lib/types';
+import { buildWhatsappUrl } from '@/lib/validation/whatsapp';
 
 export default function OrgProfilePage({
   params,
@@ -119,7 +120,7 @@ export default function OrgProfilePage({
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Acerca de
               </h3>
-              <p className="text-slate-600 leading-relaxed whitespace-pre-line break-words">
+              <p className="text-slate-600 leading-relaxed whitespace-pre-line wrap-break-word">
                 {org.description}
               </p>
             </div>
@@ -139,7 +140,7 @@ export default function OrgProfilePage({
                       contact.type === 'link'
                         ? contact.value
                         : contact.type === 'whatsapp'
-                          ? `https://wa.me/${contact.value.replace(/\D/g, '')}`
+                          ? buildWhatsappUrl(contact.value)
                           : `mailto:${contact.value}`
                     }
                     target="_blank"

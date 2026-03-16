@@ -8,6 +8,12 @@ import { getAllCategories } from '@/lib/actions/categories';
 import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import type { Category, Event } from '@/lib/types';
 import { validateImage } from '@/lib/validation/image';
+import {
+  normalizeWhatsappContact,
+  sanitizeWhatsappInput,
+  validateWhatsappContact,
+  WHATSAPP_CONSTRAINTS,
+} from '@/lib/validation/whatsapp';
 
 function toDatetimeLocal(date: Date | null | undefined): string {
   if (!date) return '';
@@ -31,7 +37,8 @@ export default function EditEventPage({
   const [categories, setCategories] = useState<Category[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
+  const [bannerError, setBannerError] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
 
   // Form fields
@@ -45,6 +52,9 @@ export default function EditEventPage({
   const [registrationLink, setRegistrationLink] = useState('');
   const [whatsappContact, setWhatsappContact] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const whatsappError = validateWhatsappContact(whatsappContact);
+  const visibleWhatsappError =
+    whatsappContact.length === 0 ? null : whatsappError;
 
   useEffect(() => {
     async function load() {
@@ -67,7 +77,7 @@ export default function EditEventPage({
         setStartDate(toDatetimeLocal(ev.startDate));
         setEndDate(toDatetimeLocal(ev.endDate));
         setRegistrationLink(ev.registrationLink ?? '');
-        setWhatsappContact(ev.whatsappContact ?? '');
+        setWhatsappContact(sanitizeWhatsappInput(ev.whatsappContact ?? ''));
         setSelectedCategories(ev.categories ?? []);
       } catch (err) {
         console.error(err);
@@ -91,11 +101,11 @@ export default function EditEventPage({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setError('');
+    setBannerError('');
 
     const error = validateImage(file);
     if (error) {
-      setError(error);
+      setBannerError(error);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -112,7 +122,13 @@ export default function EditEventPage({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setFormError('');
+
+    if (whatsappError) {
+      setFormError(whatsappError);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -132,13 +148,13 @@ export default function EditEventPage({
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         registrationLink: registrationLink || null,
-        whatsappContact: whatsappContact || null,
+        whatsappContact: normalizeWhatsappContact(whatsappContact),
         categories: selectedCategories,
       });
 
       router.replace(appendReturnTo(`/events/${id}`, returnTo));
     } catch (err) {
-      setError((err as Error).message || 'Error al guardar los cambios.');
+      setFormError((err as Error).message || 'Error al guardar los cambios.');
     } finally {
       setLoading(false);
     }
@@ -194,11 +210,11 @@ export default function EditEventPage({
 
       <h1 className="text-3xl font-bold text-slate-900 mb-8">Editar Evento</h1>
 
-      {/*error && (
+      {formError && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-          {error}
+          {formError}
         </div>
-      )*/}
+      )}
 
       <form
         onSubmit={handleSubmit}
@@ -280,7 +296,9 @@ export default function EditEventPage({
               </button>
             )}
           </div>
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          {bannerError && (
+            <p className="text-red-500 text-sm mt-2">{bannerError}</p>
+          )}
           <p className="text-xs text-slate-400 mt-1">
             O actualiza la URL directamente:
           </p>
@@ -385,13 +403,30 @@ export default function EditEventPage({
               <label className="block text-xs font-semibold text-slate-500 mb-1">
                 Número de WhatsApp
               </label>
-              <input
-                type="text"
-                value={whatsappContact}
-                onChange={(e) => setWhatsappContact(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
-                placeholder="+51 999 999 999"
-              />
+              <div
+                className={`flex overflow-hidden rounded-xl border focus-within:ring-2 focus-within:ring-brand-500 ${visibleWhatsappError ? 'border-red-300' : 'border-slate-200'}`}
+              >
+                <span className="flex items-center bg-slate-50 px-4 font-semibold text-slate-500 border-r border-slate-200">
+                  {WHATSAPP_CONSTRAINTS.countryCode}
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={WHATSAPP_CONSTRAINTS.localDigits}
+                  value={whatsappContact}
+                  onChange={(e) =>
+                    setWhatsappContact(sanitizeWhatsappInput(e.target.value))
+                  }
+                  className="min-w-0 flex-1 px-4 py-3 outline-none"
+                  placeholder="999999999"
+                  aria-label="Número de WhatsApp sin prefijo"
+                />
+              </div>
+              {visibleWhatsappError && (
+                <p className="mt-1 text-sm text-red-600">
+                  {visibleWhatsappError}
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -16,6 +16,11 @@ import {
 } from '@/lib/validation/organization';
 import type { Contact, Organization } from '@/lib/types';
 import Select from '@/components/Select';
+import {
+  sanitizeWhatsappInput,
+  validateWhatsappContact,
+  WHATSAPP_CONSTRAINTS,
+} from '@/lib/validation/whatsapp';
 
 export default function EditOrganizationPage({
   params,
@@ -65,6 +70,10 @@ export default function EditOrganizationPage({
       return parsedContactLink.success ? null : parsedContactLink.formError;
     }
 
+    if (contact.type === 'whatsapp') {
+      return validateWhatsappContact(contact.value);
+    }
+
     return null;
   });
 
@@ -79,7 +88,13 @@ export default function EditOrganizationPage({
         setName(data.name ?? '');
         setDescription(data.description ?? '');
         setImage(data.image ?? '');
-        setContacts((data.contacts as Contact[]) ?? []);
+        setContacts(
+          ((data.contacts as Contact[]) ?? []).map((contact) =>
+            contact.type === 'whatsapp'
+              ? { ...contact, value: sanitizeWhatsappInput(contact.value) }
+              : contact,
+          ),
+        );
       })
       .catch(console.error)
       .finally(() => setPageLoading(false));
@@ -98,7 +113,25 @@ export default function EditOrganizationPage({
 
   const updateContact = (idx: number, field: 'type' | 'value', val: string) => {
     setContacts((prev) =>
-      prev.map((c, i) => (i === idx ? { ...c, [field]: val } : c)),
+      prev.map((c, i) => {
+        if (i !== idx) {
+          return c;
+        }
+
+        if (field === 'type') {
+          return {
+            ...c,
+            type: val as Contact['type'],
+            value:
+              val === 'whatsapp' ? sanitizeWhatsappInput(c.value) : c.value,
+          };
+        }
+
+        return {
+          ...c,
+          value: c.type === 'whatsapp' ? sanitizeWhatsappInput(val) : val,
+        };
+      }),
     );
   };
 
@@ -353,21 +386,43 @@ export default function EditOrganizationPage({
                     ]}
                     className="py-2.5! font-semibold"
                   />
-                  <input
-                    type={contact.type === 'email' ? 'email' : 'text'}
-                    value={contact.value}
-                    onChange={(e) =>
-                      updateContact(idx, 'value', e.target.value)
-                    }
-                    className={`flex-1 px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-brand-500 text-sm ${contactErrors[idx] ? 'border-red-300' : 'border-slate-200'}`}
-                    placeholder={
-                      contact.type === 'email'
-                        ? 'org@pucp.edu.pe'
-                        : contact.type === 'whatsapp'
-                          ? '+51 999 999 999'
+                  {contact.type === 'whatsapp' ? (
+                    <div className="flex-1">
+                      <div
+                        className={`flex overflow-hidden rounded-xl border text-sm focus-within:ring-2 focus-within:ring-brand-500 ${contactErrors[idx] ? 'border-red-300' : 'border-slate-200'}`}
+                      >
+                        <span className="flex items-center bg-slate-50 px-4 font-semibold text-slate-500 border-r border-slate-200">
+                          {WHATSAPP_CONSTRAINTS.countryCode}
+                        </span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={WHATSAPP_CONSTRAINTS.localDigits}
+                          value={contact.value}
+                          onChange={(e) =>
+                            updateContact(idx, 'value', e.target.value)
+                          }
+                          className="min-w-0 flex-1 px-4 py-2.5 outline-none"
+                          placeholder="999999999"
+                          aria-label="Número de WhatsApp sin prefijo"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <input
+                      type={contact.type === 'email' ? 'email' : 'text'}
+                      value={contact.value}
+                      onChange={(e) =>
+                        updateContact(idx, 'value', e.target.value)
+                      }
+                      className={`flex-1 px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-brand-500 text-sm ${contactErrors[idx] ? 'border-red-300' : 'border-slate-200'}`}
+                      placeholder={
+                        contact.type === 'email'
+                          ? 'org@pucp.edu.pe'
                           : 'https://...'
-                    }
-                  />
+                      }
+                    />
+                  )}
                   <button
                     type="button"
                     onClick={() => removeContact(idx)}
@@ -389,7 +444,7 @@ export default function EditOrganizationPage({
                   </button>
                 </div>
                 {contactErrors[idx] && (
-                  <p className="text-xs text-red-600 pl-[132px]">
+                  <p className="text-xs text-red-600 pl-33">
                     {contactErrors[idx]}
                   </p>
                 )}

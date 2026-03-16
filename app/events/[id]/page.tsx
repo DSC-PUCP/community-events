@@ -9,6 +9,7 @@ import { useSession } from '@/lib/auth-client';
 import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import Link from 'next/link';
 import type { Category, Event, Organization } from '@/lib/types';
+import { buildWhatsappUrl } from '@/lib/validation/whatsapp';
 
 export default function EventDetailPage({
   params,
@@ -349,7 +350,7 @@ export default function EventDetailPage({
                   )}
                   {event.whatsappContact && (
                     <a
-                      href={`https://wa.me/${event.whatsappContact.replace(/\D/g, '')}`}
+                      href={buildWhatsappUrl(event.whatsappContact)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block w-full bg-green-500 text-white text-center py-3 rounded-xl font-bold hover:bg-green-600 transition-colors flex items-center justify-center"
@@ -478,7 +479,7 @@ export default function EventDetailPage({
                             contact.type === 'link'
                               ? contact.value
                               : contact.type === 'whatsapp'
-                                ? `https://wa.me/${contact.value.replace(/\D/g, '')}`
+                                ? buildWhatsappUrl(contact.value)
                                 : `mailto:${contact.value}`
                           }
                           target="_blank"
