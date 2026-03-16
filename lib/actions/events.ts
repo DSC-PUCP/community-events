@@ -11,11 +11,31 @@ import type { EventStats } from '@/lib/types';
 import { drizzle as drizzleBetterSqlite } from 'drizzle-orm/better-sqlite3';
 import * as schema from '@/lib/db/schema';
 import { drizzle as drizzleLibsql } from 'drizzle-orm/libsql';
+import {
+  normalizeWhatsappContact,
+  validateWhatsappContact,
+} from '@/lib/validation/whatsapp';
 
 async function getSession() {
   return await auth.api.getSession({
     headers: await headers(),
   });
+}
+
+function normalizeOptionalWhatsappContact(
+  value: string | null | undefined,
+): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const whatsappError = validateWhatsappContact(value);
+
+  if (whatsappError) {
+    throw new Error(whatsappError);
+  }
+
+  return normalizeWhatsappContact(value);
 }
 
 export async function getAllEvents(): Promise<Event[]> {
@@ -91,6 +111,7 @@ export async function createEvent(
 
   const newEvent: NewEvent = {
     ...data,
+    whatsappContact: normalizeOptionalWhatsappContact(data.whatsappContact),
     orgId: resolvedOrgId,
     id: Date.now().toString(),
   };
@@ -122,10 +143,16 @@ export async function updateEvent(id: string, data: Partial<Event>) {
     throw new Error('Unauthorized');
   }
 
+  const normalizedWhatsappContact =
+    data.whatsappContact === undefined
+      ? undefined
+      : normalizeOptionalWhatsappContact(data.whatsappContact);
+
   await db
     .update(events)
     .set({
       ...data,
+      whatsappContact: normalizedWhatsappContact,
       updatedAt: new Date(),
     })
     .where(eq(events.id, id));

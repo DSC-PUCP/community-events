@@ -8,6 +8,12 @@ import { getAllCategories } from '@/lib/actions/categories';
 import { appendReturnTo, resolveReturnTo } from '@/lib/utils/navigation';
 import type { Category } from '@/lib/types';
 import { validateImage } from '@/lib/validation/image';
+import {
+  normalizeWhatsappContact,
+  sanitizeWhatsappInput,
+  validateWhatsappContact,
+  WHATSAPP_CONSTRAINTS,
+} from '@/lib/validation/whatsapp';
 
 function NewEventPageContent() {
   const router = useRouter();
@@ -16,7 +22,8 @@ function NewEventPageContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
+  const [bannerError, setBannerError] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
 
   // Form fields
@@ -31,6 +38,9 @@ function NewEventPageContent() {
   const [whatsappContact, setWhatsappContact] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const returnTo = resolveReturnTo(searchParams.get('returnTo'), '/dashboard');
+  const whatsappError = validateWhatsappContact(whatsappContact);
+  const visibleWhatsappError =
+    whatsappContact.length === 0 ? null : whatsappError;
 
   useEffect(() => {
     getAllCategories().then(setCategories).catch(console.error);
@@ -46,11 +56,11 @@ function NewEventPageContent() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setError('');
+    setBannerError('');
 
     const error = validateImage(file);
     if (error) {
-      setError(error);
+      setBannerError(error);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -68,11 +78,17 @@ function NewEventPageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session?.user) {
-      setError('Sesión no válida. Vuelve a iniciar sesión.');
+      setFormError('Sesión no válida. Vuelve a iniciar sesión.');
       return;
     }
 
-    setError('');
+    setFormError('');
+
+    if (whatsappError) {
+      setFormError(whatsappError);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -85,7 +101,7 @@ function NewEventPageContent() {
       }
 
       if (!finalBannerUrl) {
-        setError('Se requiere una imagen de portada (URL o archivo).');
+        setFormError('Se requiere una imagen de portada (URL o archivo).');
         setLoading(false);
         return;
       }
@@ -98,14 +114,14 @@ function NewEventPageContent() {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         registrationLink: registrationLink || null,
-        whatsappContact: whatsappContact || null,
+        whatsappContact: normalizeWhatsappContact(whatsappContact),
         orgId: session.user.id,
         categories: selectedCategories,
       });
 
       router.replace(appendReturnTo(`/events/${event.id}`, returnTo));
     } catch (err) {
-      setError((err as Error).message || 'Error al crear el evento.');
+      setFormError((err as Error).message || 'Error al crear el evento.');
     } finally {
       setLoading(false);
     }
@@ -145,11 +161,11 @@ function NewEventPageContent() {
         Crear Nuevo Evento
       </h1>
 
-      {/*error && (
+      {formError && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-          {error}
+          {formError}
         </div>
-      )*/}
+      )}
 
       <form
         onSubmit={handleSubmit}
@@ -225,7 +241,9 @@ function NewEventPageContent() {
               </button>
             )}
           </div>
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          {bannerError && (
+            <p className="text-red-500 text-sm mt-2">{bannerError}</p>
+          )}
           <p className="text-xs text-slate-400 mt-1">O proporciona una URL:</p>
           <input
             type="text"
@@ -337,13 +355,30 @@ function NewEventPageContent() {
               <label className="block text-xs font-semibold text-slate-500 mb-1">
                 Número de WhatsApp
               </label>
-              <input
-                type="text"
-                value={whatsappContact}
-                onChange={(e) => setWhatsappContact(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-brand-500"
-                placeholder="+51 999 999 999"
-              />
+              <div
+                className={`flex overflow-hidden rounded-xl border focus-within:ring-2 focus-within:ring-brand-500 ${visibleWhatsappError ? 'border-red-300' : 'border-slate-200'}`}
+              >
+                <span className="flex items-center bg-slate-50 px-4 font-semibold text-slate-500 border-r border-slate-200">
+                  {WHATSAPP_CONSTRAINTS.countryCode}
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={WHATSAPP_CONSTRAINTS.localDigits}
+                  value={whatsappContact}
+                  onChange={(e) =>
+                    setWhatsappContact(sanitizeWhatsappInput(e.target.value))
+                  }
+                  className="min-w-0 flex-1 px-4 py-3 outline-none"
+                  placeholder="999999999"
+                  aria-label="Número de WhatsApp sin prefijo"
+                />
+              </div>
+              {visibleWhatsappError && (
+                <p className="mt-1 text-sm text-red-600">
+                  {visibleWhatsappError}
+                </p>
+              )}
             </div>
           </div>
         </div>
